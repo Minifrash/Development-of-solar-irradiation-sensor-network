@@ -1,5 +1,7 @@
-from serviceManager.serviceManager import ServicesManager
-from temperatureExteriorSensor.temperatureExteriorSensor import TemperatureExteriorSensor
+import sys
+sys.path.append('./serviceManager')
+from serviceManager import ServiceManager
+#from temperatureExteriorSensor.temperatureExteriorSensor import TemperatureExteriorSensor
 
 class SamplingController(object):
     def __init__(self):
@@ -14,10 +16,25 @@ class SamplingController(object):
         #self.irradiationSensor = IrradiationSensor()
         #self.temperatureInteriorSensor = TemperatureInteriorSensor()
         #self.humiditySensor = HumiditySensor()
-        self.temperatureExteriorSensor = TemperatureExteriorSensor()
+        #self.temperatureExteriorSensor = TemperatureExteriorSensor()
         self.sampleThread = 0 # ¿Como inicializar?
 
+    #Tratar posibles errores
+    def confService(self):
+        self.servicesList = self.serviceManager.getservicesList()
+        self.sendingFrequency = self.serviceManager.getAtributeConf(self.serviceID, 'sendingFrequency')
+        self.samplingFrequency = self.serviceManager.getAtributeConf(self.serviceID, 'samplingFrecuency') # ¿Haria falta?
+        self.sleepTime = self.serviceManager.getAtributeConf(self.serviceID, 'sleepTime')
+        self.wakeTime = self.serviceManager.getAtributeConf(self.serviceID, 'wakeTime')
+
+    def start(self):
+        self.confService()
+        #self.serviceManager.wakeAllServices()
+        # Crear el thread para la funcion sendData()
+
+
     def updateAtribute(self, atribute, newValue):
+        error = False
         if atribute == 'servicesList':
             self.servicesList = newValue
         elif atribute == 'sendingFrequency':
@@ -26,31 +43,40 @@ class SamplingController(object):
             self.sendingFrequency = newValue # ¿Haria falta?
         elif atribute == 'sleepTime':
             self.sleepTime = newValue
-        elif atribute == 'wakeTime'
+        elif atribute == 'wakeTime':
             self.wakeTime = newValue
         else:
-            # error de atributo incorrecto
+            error = True # error de atributo incorrecto
+        return error
 
-    #Tratar posibles errores
-    def confService():
-        self.servicesList = self.serviceManager.getservicesList()
-        self.sendingFrequency = self.serviceManager.getAtributeConf(serviceID, 'sendingFrequency')
-        self.samplingFrequency = self.serviceManager.getAtributeConf(serviceID, 'samplingFrequency') # ¿Haria falta?
-        self.sleepTime = self.serviceManager.getAtributeConf(serviceID, 'sleepTime')
-        self.wakeTime = self.serviceManager.getAtributeConf(serviceID, 'wakeTime')
 
-    def start():
-        confService()
-        self.serviceManager.wakeAllServices()
-        # Crear el thread para la funcion sendData()
+''' Funciones que faltan
+    def sleep(self):
 
-    ''' Funciones que faltan  '''
-    #def dleep():
+    def wakeUp(self):
 
-    #def wakeUp():
+    def sendData(self):
 
-    #def sendData():
-
+    def addServicesList(self, serviceID)  ¿Haria falta?
+ '''
 
 def main():
     sc = SamplingController()
+    sc.start()
+
+    print('Lista de servicios:')
+    print(sc.servicesList.items())
+    print('sendingFrequency:')
+    print(sc.sendingFrequency)
+    print('samplingFrequency:')
+    print(sc.samplingFrequency)
+    print('sleepTime:')
+    print(sc.sleepTime)
+    print('wakeTime:')
+    print(sc.wakeTime)
+
+    sc.updateAtribute('sleepTime', sc.sleepTime+1)
+    print('Actualizacion de sleepTime:')
+    print(sc.sleepTime)
+
+main()
