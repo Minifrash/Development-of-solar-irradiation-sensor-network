@@ -1,5 +1,9 @@
-from samplingController.samplingController import SamplingController
-from serviceManager.serviceManager import ServicesManager
+import sys
+sys.path.append('./serviceManager')
+sys.path.append('./samplingController')
+from serviceManager import ServiceManager
+from samplingController import SamplingController
+
 
 class TemperatureExteriorSensor(object):
 
@@ -25,13 +29,16 @@ class TemperatureExteriorSensor(object):
         # Crear el thread para la funcion sendData()
 
     def updateAtribute(self, atribute, newValue):
+        error = False
         if atribute == 'samplingFrequency':
             self.samplingFrequency = newValue
         elif atribute == 'mode':
             self.mode = newValue
         else:
-            # error de atributo incorrecto
+            error = True # error de atributo incorrecto
+        return error
 
+        
     def getData(self):
         data = -1 # Posible error
         if self.modo == 0:
@@ -40,8 +47,13 @@ class TemperatureExteriorSensor(object):
             data = self.lastTemperature
         return data
 
-    def sampling():
+    ''' Funciones Pendientes
+    def sampling(self):
 
-    def connect():
+    def connect(self):
 
-    def disconnect():
+    def disconnect(self):
+
+    def serviceEnabled(self):
+
+    '''

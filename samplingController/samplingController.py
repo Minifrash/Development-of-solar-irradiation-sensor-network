@@ -1,7 +1,7 @@
 import sys
 sys.path.append('./serviceManager')
 from serviceManager import ServiceManager
-#from temperatureExteriorSensor.temperatureExteriorSensor import TemperatureExteriorSensor
+
 
 class SamplingController(object):
     def __init__(self):
@@ -50,7 +50,7 @@ class SamplingController(object):
         return error
 
 
-''' Funciones que faltan
+''' Funciones pendientes
     def sleep(self):
 
     def wakeUp(self):

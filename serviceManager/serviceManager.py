@@ -64,7 +64,7 @@ class ServiceManager(object):
             self.temperatureExteriorSensor.start()
 
 
-    '''  Funciones que faltan
+    '''  Funciones pendientes
     def start(self)
 
     def updateFileNameService(self, serviceID, fileName)  #¿Para que se usa?
