@@ -28,13 +28,6 @@ class ServiceManager(object):
         return self.servicesList
 
     def readFileConf (self, fileName):
-        '''  Codigo si hubise fallos con dic = eval(f.read())
-        dic = dict()
-        for linea in open(fileName, "r"):
-            linea.strip()
-            clave,  valor = linea.split()
-            dic.setdefault(clave, valor)
-        '''
         f = open(fileName, "r")
         dic = eval(f.read())
         f.close()
@@ -45,20 +38,11 @@ class ServiceManager(object):
         error = False
         f = open(fileName, "w")
         f.write(str(data))
-
-        '''   Codigo si hubise fallos con f.write(str(data))
-        lista = data.keys()
-        for clave in lista:
-            value = data[clave]
-            line = clave + ' ' + str(value) + '\n' # usar str porque no deja concatenar string con int
-            f.write(line)
-        '''
         f.close()
         return error
 
     def getAtributeConf(self, serviceID, atribute):
         fileName = self.servicesList[serviceID][path]  #Implementar diccionario con clave = serviceID y valor = fileNameConf
-        #fileName = 'entrada.txt'
         atributos = self.readFileConf(fileName)
         value = atributos[atribute]
         return value
@@ -66,7 +50,6 @@ class ServiceManager(object):
     def updateAtributeConf(self, serviceID, atribute, value):
         error = False
         fileName = self.servicesList[serviceID][path]  #Implementar diccionario con clave = serviceID y valor = fileNameConf
-        #fileName = 'entrada.txt'
         atributes = self.readFileConf(fileName)
         atributes[atribute] = value
         writeFileConf(fileName, atributes)
