@@ -1,3 +1,1 @@
-{0:{'path':'../serviceManager/conf.txt', 'serviceEnabled':1},
-1:{'path':'../samplingController/conf.txt', 'serviceEnabled':1},
-2:{'path':'../temperatureExteriorSensor/conf.txt', 'serviceEnabled':1},}
+{0: {'path': './serviceManager/conf.txt', 'serviceEnabled': 1}, 1: {'path': './samplingController/conf.txt', 'serviceEnabled': 1}, 2: {'path': './temperatureExteriorSensor/conf.txt', 'serviceEnabled': 1}}

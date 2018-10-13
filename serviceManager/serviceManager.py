@@ -1,28 +1,32 @@
-from samplingController.samplingController import SamplingController
-from temperatureExteriorSensor.temperatureExteriorSensor import TemperatureExteriorSensor
+#import sys
+#sys.path.append('./samplingController')
+#from samplingController import SamplingController
 
 class ServiceManager(object):
 
     def __init__(self):
         self.serviceID = 0 # Faltaria indicar el serviceID de ServicesManager
-        self.servicesList =  self.readFileConf("confFile.txt")
-        self.samplingController = SamplingController()
+        self.servicesList =  self.readFileConf('./serviceManager/conf.txt')
+        #self.samplingController = SamplingController()
         #self.locationSensor = LocationSensor()
         #self.irradiationSensor = IrradiationSensor()
         #self.temperatureInteriorSensor = TemperatureInteriorSensor()
         #self.humiditySensor = HumiditySensor()
-        self.temperatureExteriorSensor = TemperatureExteriorSensor()
+        #self.temperatureExteriorSensor = TemperatureExteriorSensor()
 
 
     def addServicesList(self, serviceID, path, serviceEnabled):
         newService = {'path': path, 'serviceEnabled':serviceEnabled}
-        error = self.servicesList.setdefault(serviceID, newService)
-        self.writeFileConf (self.servicesList[self.serviceID][path], self.servicesList):
-        return error
+        self.servicesList.setdefault(serviceID, newService)
+        fileName = self.servicesList[self.serviceID].get('path')
+        self.writeFileConf (fileName, self.servicesList)
+        return self.servicesList
 
-    def deleteServiceList(self, serviceID):
-        deleteService = selt.servicesList.pop('serviceID')
-        # Tratar posible error que devuelba pop()
+    def deleteServiceList(self, serviceID): # Tratar posible error que devuelba pop()
+        deleteService = self.servicesList.pop(serviceID)
+        fileName = self.servicesList[self.serviceID].get('path')
+        self.writeFileConf (fileName, self.servicesList)
+        return self.servicesList
 
     def getservicesList(self):
         return self.servicesList
@@ -34,7 +38,7 @@ class ServiceManager(object):
         return dic
 
     # REPASAR ¿Como se refleja un posible error?
-    def writeFileConf (fileName, data):
+    def writeFileConf (self, fileName, data):
         error = False
         f = open(fileName, "w")
         f.write(str(data))
@@ -42,30 +46,58 @@ class ServiceManager(object):
         return error
 
     def getAtributeConf(self, serviceID, atribute):
-        fileName = self.servicesList[serviceID][path]  #Implementar diccionario con clave = serviceID y valor = fileNameConf
+        fileName = self.servicesList[serviceID].get('path')
         atributos = self.readFileConf(fileName)
         value = atributos[atribute]
         return value
 
     def updateAtributeConf(self, serviceID, atribute, value):
         error = False
-        fileName = self.servicesList[serviceID][path]  #Implementar diccionario con clave = serviceID y valor = fileNameConf
+        fileName = self.servicesList[serviceID].get('path')  #Implementar diccionario con clave = serviceID y valor = fileNameConf
         atributes = self.readFileConf(fileName)
         atributes[atribute] = value
-        writeFileConf(fileName, atributes)
+        self.writeFileConf(fileName, atributes)
         return error
 
-    def wakeAllServices():
-        if self.servicesList[2]['serviceEnabled'] == 1:
+    def wakeAllServices(self):  # TERMINAR
+        if self.servicesList[2].get('serviceEnabled') == 1:
             self.temperatureExteriorSensor.start()
 
-def main():
-    services = ServicesManager()
-    #services.addServicesList()
-    #dic = services.getservicesList()
-    dic = services.readFileConf("entrada.txt")
-    print(dic.items())
 
-    return 0
+    '''  Funciones que faltan
+    def start(self)
+
+    def updateFileNameService(self, serviceID, fileName)  #¿Para que se usa?
+
+    def startService(self, serviceID)
+
+    def stopService(self, serviceID)
+
+    def restartService(self, serviceID)
+    '''
+
+
+def main():
+    sm = ServiceManager()
+    services = sm.getservicesList()
+
+    print('Lista de servicios:')
+    print(services.items())
+    print('Lista de servicios con nuevo servicio 5:')
+    services = sm.addServicesList(5, './prueba/conf.txt', 0)
+    print(services.items())
+    print('Lista de servicios sin servicio 5:')
+    services = sm.deleteServiceList(5)
+    print(services.items())
+
+
+    print('Atributo sleepTime del servicio 1:')
+    atribute = sm.getAtributeConf(1, 'sleepTime')
+    print(atribute)
+
+    sm.updateAtributeConf(1, 'sleepTime', atribute+1)
+    print('Atributo actualizado sleepTime del servicio 1:')
+    atribute = sm.getAtributeConf(1, 'sleepTime')
+    print(atribute)
 
 main()
