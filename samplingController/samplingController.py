@@ -1,9 +1,27 @@
+#import _thread
+import time
 import sys
+sys.path.append('./temperatureExteriorSensor')
 sys.path.append('./serviceManager')
 from serviceManager import ServiceManager
 
 
+
 class SamplingController(object):
+
+    __instance = None
+    def __new__(cls): # Crear una unica instancia de la clase
+        if SamplingController.__instance is None: # Si no existe el atributo “instance”
+            SamplingController.__instance = object.__new__(cls) # lo creamos#cls.instance = super(SamplingController, cls).__new__(cls) # lo creamos
+        return SamplingController.__instance
+
+    '''
+    def __new__(cls): # Crear una unica instancia de la clase
+        if not hasattr(cls, 'instance'): # Si no existe el atributo “instance”
+            cls.instance = object.__new__(cls) # lo creamos#cls.instance = super(SamplingController, cls).__new__(cls) # lo creamos
+        return cls.instance
+    '''
+
     def __init__(self):
         self.serviceID = 1 # Faltaria indicar el serviceID de ServicesManager
         self.servicesList = dict()
@@ -16,7 +34,7 @@ class SamplingController(object):
         #self.irradiationSensor = IrradiationSensor()
         #self.temperatureInteriorSensor = TemperatureInteriorSensor()
         #self.humiditySensor = HumiditySensor()
-        #self.temperatureExteriorSensor = TemperatureExteriorSensor()
+        self.temperatureExteriorSensor = TemperatureExteriorSensor()
         self.sampleThread = 0 # ¿Como inicializar?
 
     #Tratar posibles errores
@@ -49,6 +67,10 @@ class SamplingController(object):
             error = True # error de atributo incorrecto
         return error
 
+    def sendData(self):
+        for i in range(5):
+            time.sleep(5)
+            print(self.temperatureExteriorSensor.getData())
 
 ''' Funciones pendientes
     def sleep(self):
@@ -61,6 +83,7 @@ class SamplingController(object):
  '''
 
 def main():
+    '''
     sc = SamplingController()
     sc.start()
 
@@ -78,5 +101,26 @@ def main():
     sc.updateAtribute('sleepTime', sc.sleepTime+1)
     print('Actualizacion de sleepTime:')
     print(sc.sleepTime)
+    '''
+    '''
+    sm1 = SamplingController()
+    sm2 = SamplingController()
+
+    print(sm1 is sm2)
+    print('sleepTime sm1:')
+    print(sm1.sleepTime)
+    print('sleepTime sm2:')
+    print(sm2.sleepTime)
+    sm1.updateAtribute('sleepTime', sm1.sleepTime+2)
+    print('sleepTime sm1:')
+    print(sm1.sleepTime)
+    print('sleepTime sm2:')
+    print(sm2.sleepTime)
+    '''
+    sc = SamplingController()
+    sc.start()
+    sc.sendData()
+
+
 
 main()

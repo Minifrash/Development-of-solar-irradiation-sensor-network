@@ -1,8 +1,16 @@
-#import sys
+import sys
 #sys.path.append('./samplingController')
+sys.path.append('./temperatureExteriorSensor')
 #from samplingController import SamplingController
+#from temperatureExteriorSensor import TemperatureExteriorSensor
 
 class ServiceManager(object):
+
+    __instance = None
+    def __new__(cls): # Crear una unica instancia de la clase
+        if ServiceManager.__instance is None: # Si no existe el atributo “instance”
+            ServiceManager.__instance = object.__new__(cls) # lo creamos#cls.instance = super(SamplingController, cls).__new__(cls) # lo creamos
+        return ServiceManager.__instance
 
     def __init__(self):
         self.serviceID = 0 # Faltaria indicar el serviceID de ServicesManager
@@ -51,7 +59,7 @@ class ServiceManager(object):
         value = atributos[atribute]
         return value
 
-    def updateAtributeConf(self, serviceID, atribute, value):
+    def updateAtributeConf(self, serviceID, atribute, value): #Faltaria decir al service que actualice su parametro
         error = False
         fileName = self.servicesList[serviceID].get('path')  #Implementar diccionario con clave = serviceID y valor = fileNameConf
         atributes = self.readFileConf(fileName)
@@ -100,4 +108,5 @@ def main():
     atribute = sm.getAtributeConf(1, 'sleepTime')
     print(atribute)
 
-main()
+
+#main()
