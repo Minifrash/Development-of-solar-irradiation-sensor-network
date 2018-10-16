@@ -1,45 +1,32 @@
 import sys
 import _thread
 import time
-#sys.path.append('./serviceManager')
-#sys.path.append('./samplingController')
-from serviceManager import ServiceManager
-#from samplingController import SamplingController
 
 class TemperatureExteriorSensor(object):
-
-    __instance = None
-    def __new__(cls): # Crear una unica instancia de la clase
-        if TemperatureExteriorSensor.__instance is None: # Si no existe el atributo “instance”
-            TemperatureExteriorSensor.__instance = object.__new__(cls) # lo creamos#cls.instance = super(SamplingController, cls).__new__(cls) # lo creamos
-        return TemperatureExteriorSensor.__instance
 
     def __init__(self):
         self.serviceID = 2
         self.samplingFrequency = 0
         self.mode = 0
-        self.serviceManager = ServiceManager()
-        #self.samplingController = SamplingController()
         self.lastTemperature = 0
         self.sumTemperature = 0
         self.sampleCounter = 0
         self.enabled = 0 # ¿Haria falta?
-        self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency, 1))#0 # ¿Como inicializar?
+        self.sampleThread = 0 #_thread.start_new_thread(self.sampling, (self.samplingFrequency, 1))#0 # ¿Como inicializar?
 
 
-    def confService(self):
-        self.samplingFrequency = self.serviceManager.getAtributeConf(serviceID, 'samplingFrequency')
-        self.mode = self.serviceManager.getAtributeConf(serviceID, 'mode')
+    def confService(self, atributos):
+        self.samplingFrequency = atributos['samplingFrecuency']
+        self.mode = atributos['mode']
 
     def start(self):
-        confService()
         # Crear el thread para la funcion sendData()
-        self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency))
+        self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,2))
 
     def sampling(self, delay, id):
         while True:
             time.sleep(delay)
-            self.lastTemperature = 1
+            self.lastTemperature = 2
             self.sumTemperature += self.lastTemperature
             self.sampleCounter += 1
 
