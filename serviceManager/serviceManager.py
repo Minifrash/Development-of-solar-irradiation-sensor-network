@@ -3,6 +3,9 @@ import sys
 #sys.path.append('./TemperatureOutSensor')
 from samplingController.samplingController import SamplingController
 from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
+from temperatureInSensor.temperatureInSensor import TemperatureInSensor
+from humiditySensor.humiditySensor import HumiditySensor
+from irradiationSensor.irradiationSensor import IrradiationSensor
 
 class ServiceManager(object):
 
@@ -12,11 +15,11 @@ class ServiceManager(object):
         self.sensorsList = dict()
 
         self.samplingController = 0 #SamplingController()
-        #self.locationSensor = LocationSensor()
-        #self.irradiationSensor = IrradiationSensor()
-        #self.temperatureInteriorSensor = TemperatureInteriorSensor()
-        #self.humiditySensor = HumiditySensor()
-        self.TemperatureOutSensor = 0 #TemperatureOutSensor()
+        self.locationSensor = 0 #LocationSensor()
+        self.irradiationSensor = 0 #IrradiationSensor()
+        self.temperatureInSensor = 0 #TemperatureInSensor()
+        self.humiditySensor = 0 #HumiditySensor()
+        self.temperatureOutSensor = 0 #TemperatureOutSensor()
 
     def start(self):
         self.servicesList = self.readFileConf('./serviceManager/conf.txt')
@@ -30,7 +33,15 @@ class ServiceManager(object):
             if serviceID == 1 and value.get('serviceEnabled') == 1:
                 self.samplingController.start(self.sensorsList)
             elif serviceID == 2 and value.get('serviceEnabled') == 1:
-                self.TemperatureOutSensor.start()
+                self.locationSensor.start()
+            elif serviceID == 3 and value.get('serviceEnabled') == 1:
+                self.irradiationSensor.start()
+            elif serviceID == 4 and value.get('serviceEnabled') == 1:
+                self.temperatureInSensor.start()
+            elif serviceID == 5 and value.get('serviceEnabled') == 1:
+                self.humiditySensor.start()
+            elif serviceID == 6 and value.get('serviceEnabled') == 1:
+                self.temperatureOutSensor.start()
             else:
                 error = -1
         return error
@@ -44,10 +55,34 @@ class ServiceManager(object):
                 self.samplingController.confService(atributes)
             elif serviceID == 2 and value.get('serviceEnabled') == 1:
                 atributes = self.getAtributesConf(serviceID)
-                self.TemperatureOutSensor = TemperatureOutSensor()
+                self.locationSensor = LocationSensor()
                 if value.get('serviceSensor') == 1:
-                    self.sensorsList.setdefault(serviceID, self.TemperatureOutSensor)
-                self.TemperatureOutSensor.confService(atributes)
+                    self.sensorsList.setdefault(serviceID, self.locationSensor)
+                self.locationSensor.confService(atributes)
+            elif serviceID == 3 and value.get('serviceEnabled') == 1:
+                atributes = self.getAtributesConf(serviceID)
+                self.irradiationSensor = IrradiationSensor()
+                if value.get('serviceSensor') == 1:
+                    self.sensorsList.setdefault(serviceID, self.irradiationSensor)
+                self.irradiationSensor.confService(atributes)
+            elif serviceID == 4 and value.get('serviceEnabled') == 1:
+                atributes = self.getAtributesConf(serviceID)
+                self.temperatureInSensor = TemperatureInSensor()
+                if value.get('serviceSensor') == 1:
+                    self.sensorsList.setdefault(serviceID, self.temperatureInSensor)
+                self.temperatureInSensor.confService(atributes)
+            elif serviceID == 5 and value.get('serviceEnabled') == 1:
+                atributes = self.getAtributesConf(serviceID)
+                self.humiditySensor = HumiditySensor()
+                if value.get('serviceSensor') == 1:
+                    self.sensorsList.setdefault(serviceID, self.humiditySensor)
+                self.humiditySensor.confService(atributes)
+            elif serviceID == 6 and value.get('serviceEnabled') == 1:
+                atributes = self.getAtributesConf(serviceID)
+                self.temperatureOutSensor = TemperatureOutSensor()
+                if value.get('serviceSensor') == 1:
+                    self.sensorsList.setdefault(serviceID, self.temperatureOutSensor)
+                self.temperatureOutSensor.confService(atributes)
             else:
                 error = -1
         return error
@@ -69,17 +104,23 @@ class ServiceManager(object):
         return self.servicesList
 
     def readFileConf (self, fileName):
-        f = open(fileName, "r")
-        dic = eval(f.read())
-        f.close()
+        try
+            f = open(fileName, "r")
+            dic = eval(f.read())
+            f.close()
+        except IOError:
+            error = -1 #-1 es un ejemplo, dependerá de la política de errores
         return dic
 
     # REPASAR ¿Como se refleja un posible error?
     def writeFileConf (self, fileName, data):
-        error = False
-        f = open(fileName, "w")
-        f.write(str(data))
-        f.close()
+        error = 0
+        try
+            f = open(fileName, "w")
+            f.write(str(data))
+            f.close()
+        except IOError:
+            error = -1 #-1 es un ejemplo, dependerá de la política de errores
         return error
 
     def getAtributesConf(self, serviceID):

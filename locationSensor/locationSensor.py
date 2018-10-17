@@ -1,59 +1,46 @@
 import sys
 import _thread
 import time
-from dht import DHT
 
-class TemperatureInSensor(object):
+class LocationSensor(object):
 
     def __init__(self):
-        self.serviceID = 4
-        self.samplingFrequency = 0
+        self.serviceID = 2
         self.mode = 0
-        self.lastTemperature = 0
-        self.sumTemperature = 0
-        self.sampleCounter = 0
+        self.latitude = 0
+        self.altitude = 0
+        self.longitude = 0
         self.enabled = 0 # ¿Haria falta?
         self.sampleThread = 0 #_thread.start_new_thread(self.sampling, (self.samplingFrequency, 1))#0 # ¿Como inicializar?
-        self.temp = DHT('P3',1)
 
     def confService(self, atributos):
-        self.samplingFrequency = atributos['samplingFrecuency']
         self.mode = atributos['mode']
 
     def start(self):
         # Crear el thread para la funcion sendData()
-        self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,4))
+        self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,2))
 
-    def sampling(self, delay, id):
-        while True:
-            time.sleep(delay)
-            result = self.temp.read()
-            self.lastTemperature = result.temperature/1.0
-            self.sumTemperature += self.lastTemperature
-            self.sampleCounter += 1
+    '''def sincro(self):'''
 
     def updateAtribute(self, atribute, newValue):
         error = False
-        if atribute == 'samplingFrequency':
-            self.samplingFrequency = newValue
-        elif atribute == 'mode':
+        if atribute == 'mode':
             self.mode = newValue
         else:
             error = True # error de atributo incorrecto
         return error
 
 
-    def getData(self):
+'''    def getData(self):
         data = -1 # Posible error
         if self.mode == 0:
-            data = self.sumTemperature/self.sampleCounter
+            data = #normal ¿Mandar array de lat-lon-alt?
         elif self.mode == 1:
-            data = self.lastTemperature
+            data = #rafaga ¿?
         else:
             data = -1
-        self.sumTemperature = 0
-        self.sampleCounter = 0
         return data
+'''
 
     def disconnect(self):
         try
