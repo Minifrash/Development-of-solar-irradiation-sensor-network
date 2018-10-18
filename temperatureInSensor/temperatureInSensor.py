@@ -1,7 +1,7 @@
 import sys
 import _thread
 import time
-from dht import DHT
+from temperatureInSensor.dht import DHT
 
 class TemperatureInSensor(object):
 
@@ -54,12 +54,6 @@ class TemperatureInSensor(object):
         self.sumTemperature = 0
         self.sampleCounter = 0
         return data
-
-    def disconnect(self):
-        try
-            self.sampleThread = _thread.exit()
-        except SystemExit:
-            error = -1 #-1 es un ejemplo, dependerá de política de errores
 
     ''' Funciones Pendientes
 
