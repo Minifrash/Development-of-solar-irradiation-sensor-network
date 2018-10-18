@@ -65,6 +65,9 @@ class TemperatureOutSensor(object):
         self.sampleCounter = 0
         return data
 
+    def disconnect(self):
+        self.sampleThread.exit()
+
     ''' Funciones Pendientes
 
     def connect(self):
