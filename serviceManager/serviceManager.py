@@ -15,7 +15,7 @@ class ServiceManager(object):
         self.sensorsList = dict()
 
         self.samplingController = 0 #SamplingController()
-        self.locationSensor = 0 #LocationSensor()
+        #self.locationSensor = 0 #LocationSensor()
         self.irradiationSensor = 0 #IrradiationSensor()
         self.temperatureInSensor = 0 #TemperatureInSensor()
         self.humiditySensor = 0 #HumiditySensor()
@@ -32,8 +32,8 @@ class ServiceManager(object):
         for serviceID, value in self.servicesList.items():
             if serviceID == 1 and value.get('serviceEnabled') == 1:
                 self.samplingController.start(self.sensorsList)
-            elif serviceID == 2 and value.get('serviceEnabled') == 1:
-                self.locationSensor.start()
+            #elif serviceID == 2 and value.get('serviceEnabled') == 1:
+            #    self.locationSensor.start()
             elif serviceID == 3 and value.get('serviceEnabled') == 1:
                 self.irradiationSensor.start()
             elif serviceID == 4 and value.get('serviceEnabled') == 1:
@@ -53,12 +53,6 @@ class ServiceManager(object):
                 atributes = self.getAtributesConf(serviceID)
                 self.samplingController = SamplingController()
                 self.samplingController.confService(atributes)
-            elif serviceID == 2 and value.get('serviceEnabled') == 1:
-                atributes = self.getAtributesConf(serviceID)
-                self.locationSensor = LocationSensor()
-                if value.get('serviceSensor') == 1:
-                    self.sensorsList.setdefault(serviceID, self.locationSensor)
-                self.locationSensor.confService(atributes)
             elif serviceID == 3 and value.get('serviceEnabled') == 1:
                 atributes = self.getAtributesConf(serviceID)
                 self.irradiationSensor = IrradiationSensor()
@@ -104,23 +98,23 @@ class ServiceManager(object):
         return self.servicesList
 
     def readFileConf (self, fileName):
-        try
-            f = open(fileName, "r")
-            dic = eval(f.read())
-            f.close()
-        except IOError:
-            error = -1 #-1 es un ejemplo, dependerá de la política de errores
+        #try
+        f = open(fileName, "r")
+        dic = eval(f.read())
+        f.close()
+        #except IOError:
+        error = -1 #-1 es un ejemplo, dependerá de la política de errores
         return dic
 
     # REPASAR ¿Como se refleja un posible error?
     def writeFileConf (self, fileName, data):
         error = 0
-        try
-            f = open(fileName, "w")
-            f.write(str(data))
-            f.close()
-        except IOError:
-            error = -1 #-1 es un ejemplo, dependerá de la política de errores
+        #try:
+        f = open(fileName, "w")
+        f.write(str(data))
+        f.close()
+        #except IOError:
+        error = -1 #-1 es un ejemplo, dependeráos.uname() de la política de errores
         return error
 
     def getAtributesConf(self, serviceID):
@@ -160,29 +154,6 @@ class ServiceManager(object):
 
 
 def main():
-    '''
-    sm = ServiceManager()
-    services = sm.getservicesList()
-
-    print('Lista de servicios:')
-    print(services.items())
-    print('Lista de servicios con nuevo servicio 5:')
-    services = sm.addServicesList(5, './prueba/conf.txt', 0)
-    print(services.items())
-    print('Lista de servicios sin servicio 5:')
-    services = sm.deleteServiceList(5)
-    print(services.items())
-
-
-    print('Atributo sleepTime del servicio 1:')
-    atribute = sm.getAtributeConf(1, 'sleepTime')
-    print(atribute)
-
-    sm.updateAtributeConf(1, 'sleepTime', atribute+1)
-    print('Atributo actualizado sleepTime del servicio 1:')
-    atribute = sm.getAtributeConf(1, 'sleepTime')
-    print(atribute)
-    '''
     sm = ServiceManager()
     sm.start()
 
