@@ -1,7 +1,7 @@
 import sys
 import _thread
 import time
-from dht import DHT
+from temperatureInSensor.dht import DHT
 
 class HumiditySensor(object):
 
@@ -14,7 +14,7 @@ class HumiditySensor(object):
         self.sampleCounter = 0
         self.enabled = 0 # ¿Haria falta?
         self.sampleThread = 0 #_thread.start_new_thread(self.sampling, (self.samplingFrequency, 1))#0 # ¿Como inicializar?
-        self.temp = DHT('P3',1)
+        self.humidity = DHT('P3',1)
 
     def confService(self, atributos):
         self.samplingFrequency = atributos['samplingFrecuency']
@@ -27,7 +27,7 @@ class HumiditySensor(object):
     def sampling(self, delay, id):
         while True:
             time.sleep(delay)
-            result = self.temp.read()
+            result = self.humidity.read()
             self.lastHumidity = result.humidity/1.0
             self.sumHumidity += self.lastHumidity
             self.sampleCounter += 1
@@ -56,10 +56,7 @@ class HumiditySensor(object):
         return data
 
     def disconnect(self):
-        try
-            self.sampleThread = _thread.exit()
-        except SystemExit:
-            error = -1 #-1 es un ejemplo, dependerá de política de errores
+        self.sampleThread.exit()
 
     ''' Funciones Pendientes
 
