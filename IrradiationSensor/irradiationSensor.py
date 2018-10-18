@@ -1,6 +1,7 @@
 import sys
 import _thread
-import time, ADC
+import time
+from machine import ADC
 
 class IrradiationSensor(object):
 
@@ -15,7 +16,7 @@ class IrradiationSensor(object):
         self.sampleThread = 0 #_thread.start_new_thread(self.sampling, (self.samplingFrequency, 1))#0 # ¿Como inicializar?
         self.adc = ADC()
         self.adc.vref(1058)
-        self.panel = adc.channel(pin='P13', attn = ADC.ATTN_11DB)
+        self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
 
     def confService(self, atributos):
         self.samplingFrequency = atributos['samplingFrecuency']
@@ -28,7 +29,7 @@ class IrradiationSensor(object):
     def sampling(self, delay, id):
         while True:
             time.sleep(delay)
-            self.lastRadiation = panel.voltage()
+            self.lastRadiation = self.panel.voltage()
             self.sumRadiation += self.lastRadiation
             self.sampleCounter += 1
 
@@ -56,10 +57,7 @@ class IrradiationSensor(object):
         return data
 
     def disconnect(self):
-        try
-            self.sampleThread = _thread.exit()
-        except SystemExit:
-            error = -1 #-1 es un ejemplo, dependerá de política de errores
+        self.sampleThread.exit()
 
     ''' Funciones Pendientes
 
