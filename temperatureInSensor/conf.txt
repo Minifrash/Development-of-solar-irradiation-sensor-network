@@ -1,0 +1,1 @@
+{'serviceID': 4, 'samplingFrecuency': 1, 'mode': 0}

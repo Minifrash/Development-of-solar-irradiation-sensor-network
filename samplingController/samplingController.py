@@ -1,5 +1,6 @@
 #import _thread
 import time
+import gc
 
 class SamplingController(object):
 
@@ -43,10 +44,20 @@ class SamplingController(object):
         return error
 
     def sendData(self):
+        self.ram()
         for i in range(5):
             time.sleep(5)
-            for sensor in self.sensorsList.values():
-                print(sensor.getData())
+            for sensor, valor in self.sensorsList.items():
+                print(str(sensor) + " : " + str(valor.getData()))
+                self.ram()
+        for thread in self.sensorsList.values():
+            thread.disconnect()
+
+    def ram(self):
+        #gc.collect()
+        print('-----------------------------')
+        print('Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
+        print('-----------------------------')
 
     ''' Funciones pendientes
     def sleep(self):
