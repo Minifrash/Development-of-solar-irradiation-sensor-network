@@ -47,14 +47,16 @@ class SamplingController(object):
         self.ram()
         for i in range(5):
             time.sleep(5)
+            print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
             for sensor, valor in self.sensorsList.items():
                 print(str(sensor) + " : " + str(valor.getData()))
                 self.ram()
         for thread in self.sensorsList.values():
             thread.disconnect()
+        self.ram()
 
     def ram(self):
-        #gc.collect()
+        gc.collect()
         print('-----------------------------')
         print('Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
         print('-----------------------------')

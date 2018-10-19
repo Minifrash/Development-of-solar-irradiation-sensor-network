@@ -16,6 +16,7 @@ class TemperatureOutSensor(object):
         self.sampleCounter = 0
         self.enabled = 0 # ¿Haria falta?
         self.sampleThread = 0 #_thread.start_new_thread(self.sampling, (self.samplingFrequency, 1))#0 # ¿Como inicializar?
+        self.close = False
         self.powerPin = Pin('P8', mode=Pin.OUT)
         self.powerPin(1)
         self.ow = OneWire(Pin('P4'))
@@ -33,6 +34,8 @@ class TemperatureOutSensor(object):
 
     def sampling(self, delay, id):
         while True:
+            if self.close is True:
+                _thread.exit()
             self.powerPin(1)
             #time.sleep(delay)
             self.temp.start_convertion()
@@ -66,7 +69,7 @@ class TemperatureOutSensor(object):
         return data
 
     def disconnect(self):
-        self.sampleThread.exit()
+        self.close = True
 
     ''' Funciones Pendientes
 
