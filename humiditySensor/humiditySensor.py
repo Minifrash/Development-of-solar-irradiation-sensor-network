@@ -13,9 +13,8 @@ class HumiditySensor(object):
         self.lastHumidity = 0
         self.sumHumidity = 0
         self.sampleCounter = 0
-        self.enabled = 0 # ¿Haria falta?
-        self.sampleThread = 0 #_thread.start_new_thread(self.sampling, (self.samplingFrequency, 1))#0 # ¿Como inicializar?
-        self.close = False
+        self.enabled = True
+        self.sampleThread = 0
         self.humidity = DHT('P3',1)
 
     def confService(self, atributos):
@@ -28,14 +27,15 @@ class HumiditySensor(object):
 
     def sampling(self, delay, id):
         while True:
-            if self.close is True:
+            if self.enabled is True:
+                time.sleep(delay)
+                result = self.humidity.read()
+                self.lastHumidity = result.humidity/1.0
+                self.sumHumidity += self.lastHumidity
+                self.sampleCounter += 1
+                gc.collect()
+            else:
                 _thread.exit()
-            time.sleep(delay)
-            result = self.humidity.read()
-            self.lastHumidity = result.humidity/1.0
-            self.sumHumidity += self.lastHumidity
-            self.sampleCounter += 1
-            gc.collect()
 
     def updateAtribute(self, atribute, newValue):
         error = False
@@ -60,13 +60,12 @@ class HumiditySensor(object):
         self.sampleCounter = 0
         return data
 
-    def disconnect(self):
-        self.close = True
-
-    ''' Funciones Pendientes
-
     def connect(self):
+        self.enabled = False
+        self.start()
+
+    def disconnect(self):
+        self.enabled = False
 
     def serviceEnabled(self):
-        return enabled
-    '''
+        return self.enabled
