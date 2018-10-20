@@ -1,17 +1,16 @@
-#import _thread
 import time
 import gc
 
 class SamplingController(object):
 
     def __init__(self):
-        self.serviceID = 1 # Faltaria indicar el serviceID de ServicesManager
+        self.serviceID = 1
         self.sensorsList = dict()
         self.sendingFrequency = 0
         self.samplingFrequency = 0 # ¿Haria falta?
         self.sleepTime = 0
         self.wakeTime = 0
-        self.sampleThread = 0 # ¿Como inicializar?
+        self.sampleThread = 0
 
     #Tratar posibles errores
     def confService(self, atributos):
@@ -20,7 +19,7 @@ class SamplingController(object):
         self.sleepTime = atributos['sleepTime']
         self.wakeTime = atributos['wakeTime']
 
-    def setServicesList(self, sensorsList): # ¿Haria falta?
+    def setServicesList(self, sensorsList):
         self.sensorsList = sensorsList
 
     def start(self, sensorsList):
@@ -43,7 +42,7 @@ class SamplingController(object):
             error = True # error de atributo incorrecto
         return error
 
-    def sendData(self):
+    def sendData(self): # Modificar para enviar datos a mensajeriaSensor
         self.ram()
         for i in range(5):
             time.sleep(5)
@@ -66,9 +65,4 @@ class SamplingController(object):
 
     def wakeUp(self):
 
-    def sendData(self):
-
-    '''
-    '''  ¿Funciones necesarias?
-    def addServicesList(self, serviceID)  ¿Haria falta?
     '''

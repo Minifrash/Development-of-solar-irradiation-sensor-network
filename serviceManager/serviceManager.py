@@ -1,6 +1,4 @@
 import sys
-#sys.path.append('./samplingController')
-#sys.path.append('./TemperatureOutSensor')
 from samplingController.samplingController import SamplingController
 from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
 from temperatureInSensor.temperatureInSensor import TemperatureInSensor
@@ -10,8 +8,8 @@ from irradiationSensor.irradiationSensor import IrradiationSensor
 class ServiceManager(object):
 
     def __init__(self):
-        self.serviceID = 0 # Faltaria indicar el serviceID de ServicesManager
-        self.servicesList =  dict() #self.readFileConf('./serviceManager/conf.txt')
+        self.serviceID = 0
+        self.servicesList =  dict()
         self.sensorsList = dict()
 
         self.samplingController = 0 #SamplingController()
@@ -27,7 +25,7 @@ class ServiceManager(object):
         self.wakeAllServices()
         self.samplingController.sendData()
 
-    def wakeAllServices(self):  # TERMINAR
+    def wakeAllServices(self):  # ¿Posible reducir codido?
         error = 0
         for serviceID, value in self.servicesList.items():
             if serviceID == 1 and value.get('serviceEnabled') == 1:
@@ -46,7 +44,7 @@ class ServiceManager(object):
                 error = -1
         return error
 
-    def confAllServices(self):  # TERMINAR
+    def confAllServices(self):  # ¿Posible reducir codido?
         error = 0
         for serviceID, value in self.servicesList.items():
             if serviceID == 1 and value.get('serviceEnabled') == 1:
@@ -97,7 +95,7 @@ class ServiceManager(object):
     def getservicesList(self):
         return self.servicesList
 
-    def readFileConf (self, fileName):
+    def readFileConf(self, fileName):
         #try
         f = open(fileName, "r")
         dic = eval(f.read())
@@ -107,7 +105,7 @@ class ServiceManager(object):
         return dic
 
     # REPASAR ¿Como se refleja un posible error?
-    def writeFileConf (self, fileName, data):
+    def writeFileConf(self, fileName, data):
         error = 0
         #try:
         f = open(fileName, "w")
@@ -122,13 +120,25 @@ class ServiceManager(object):
         atributos = self.readFileConf(fileName)
         return atributos
 
-    def updateAtributeConf(self, serviceID, atribute, value): #Faltaria decir al service que actualice su parametro
+    def getAtributeConf(self, serviceID, atribute):
+        fileName = self.servicesList[serviceID].get('path')
+        atributos = self.readFileConf(fileName)
+        value = atributos[atribute]
+        return value
+
+    def updateAtributeConf(self, serviceID, atribute, value):
         error = False
-        fileName = self.servicesList[serviceID].get('path')  #Implementar diccionario con clave = serviceID y valor = fileNameConf
+        fileName = self.servicesList[serviceID].get('path')
         atributes = self.readFileConf(fileName)
         atributes[atribute] = value
         self.writeFileConf(fileName, atributes)
         # Llamar al metodo del servicio correspondiente para que actualice su parametro
+        if serviceID == 1:
+            self.samplingController.updateAtribute(atribute, value)
+        elif self.servicesList[serviceID].get('serviceSensor') == 1 and self.servicesList[serviceID].get('serviceEnabled') == 1:
+            self.sensorsList[serviceID].updateAtribute(atribute, value)
+        else: # Si se solicita a un servicio que no sean los sensores o el samplingController
+            error = True
         return error
 
 
@@ -143,18 +153,9 @@ class ServiceManager(object):
     def restartService(self, serviceID)
 
     '''
-    '''  ¿Funciones necesarias?
-    # ¿Haria falta?
-    def getAtributeConf(self, serviceID, atribute):
-        fileName = self.servicesList[serviceID].get('path')
-        atributos = self.readFileConf(fileName)
-        value = atributos[atribute]
-        return value
-    '''
 
 
 def main():
-    '''
     sm = ServiceManager()
     sm.start()
 
