@@ -14,15 +14,13 @@ class TemperatureOutSensor(object):
         self.lastTemperature = 0
         self.sumTemperature = 0
         self.sampleCounter = 0
-        self.enabled = 0 # ¿Haria falta?
-        self.sampleThread = 0 #_thread.start_new_thread(self.sampling, (self.samplingFrequency, 1))#0 # ¿Como inicializar?
-        self.close = False
+        self.enabled = True
+        self.sampleThread = 0
         self.powerPin = Pin('P8', mode=Pin.OUT)
         self.powerPin(1)
         self.ow = OneWire(Pin('P4'))
         self.temp = DS18X20(self.ow) # DS18X20 must be powered on on instantiation (rom scan)
         self.powerPin(0)
-
 
     def confService(self, atributos):
         self.samplingFrequency = atributos['samplingFrecuency']
@@ -34,16 +32,16 @@ class TemperatureOutSensor(object):
 
     def sampling(self, delay, id):
         while True:
-            if self.close is True:
+            if self.enabled is True:
+                self.powerPin(1)
+                self.temp.start_convertion()
+                time.sleep(delay)
+                self.lastTemperature = self.temp.read_temp_async()
+                self.sumTemperature += self.lastTemperature
+                self.sampleCounter += 1
+                self.powerPin(0)
+            else:
                 _thread.exit()
-            self.powerPin(1)
-            #time.sleep(delay)
-            self.temp.start_convertion()
-            time.sleep(delay)
-            self.lastTemperature = self.temp.read_temp_async()
-            self.sumTemperature += self.lastTemperature
-            self.sampleCounter += 1
-            self.powerPin(0)
 
     def updateAtribute(self, atribute, newValue):
         error = False
@@ -54,7 +52,6 @@ class TemperatureOutSensor(object):
         else:
             error = True # error de atributo incorrecto
         return error
-
 
     def getData(self):
         data = -1 # Posible error
@@ -69,12 +66,11 @@ class TemperatureOutSensor(object):
         return data
 
     def disconnect(self):
-        self.close = True
-
-    ''' Funciones Pendientes
+        self.enabled = False
 
     def connect(self):
+        self.enabled = True
+        self.start()
 
     def serviceEnabled(self):
-        return enabled
-    '''
+        return self.enabled
