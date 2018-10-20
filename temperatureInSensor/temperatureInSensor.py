@@ -1,7 +1,7 @@
 import sys
 import _thread
 import time
-from temperatureInSensor.dht import DHT
+#from temperatureInSensor.dht import DHT
 
 class TemperatureInSensor(object):
 
@@ -12,9 +12,9 @@ class TemperatureInSensor(object):
         self.lastTemperature = 0
         self.sumTemperature = 0
         self.sampleCounter = 0
-        self.enabled = 0 # ¿Haria falta?
-        self.sampleThread = 0 #_thread.start_new_thread(self.sampling, (self.samplingFrequency, 1))#0 # ¿Como inicializar?
-        self.temp = DHT('P3',1)
+        self.enabled = True
+        self.sampleThread = 0
+        #self.temp = DHT('P3',1)
 
     def confService(self, atributos):
         self.samplingFrequency = atributos['samplingFrecuency']
@@ -26,11 +26,14 @@ class TemperatureInSensor(object):
 
     def sampling(self, delay, id):
         while True:
-            time.sleep(delay)
-            result = self.temp.read()
-            self.lastTemperature = result.temperature/1.0
-            self.sumTemperature += self.lastTemperature
-            self.sampleCounter += 1
+            if self.enabled is True:
+                time.sleep(delay)
+                result = 2#self.temp.read()
+                self.lastTemperature = result#result.temperature/1.0
+                self.sumTemperature += self.lastTemperature
+                self.sampleCounter += 1
+            else:
+                _thread.exit()
 
     def updateAtribute(self, atribute, newValue):
         error = False
@@ -56,12 +59,11 @@ class TemperatureInSensor(object):
         return data
 
     def disconnect(self):
-        self.sampleThread.exit()
-
-    ''' Funciones Pendientes
+        self.enabled = False
 
     def connect(self):
+        self.enabled = True
+        self.start()
 
     def serviceEnabled(self):
-        return enabled
-    '''
+        return self.enabled
