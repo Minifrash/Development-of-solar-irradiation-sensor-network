@@ -12,9 +12,8 @@ class IrradiationSensor(object):
         self.lastRadiation = 0
         self.sumRadiation = 0
         self.sampleCounter = 0
-        self.enabled = 0 # ¿Haria falta?
-        self.sampleThread = 0 #_thread.start_new_thread(self.sampling, (self.samplingFrequency, 1))#0 # ¿Como inicializar?
-        self.close = False
+        self.enabled = True
+        self.sampleThread = 0
         self.adc = ADC()
         self.adc.vref(1058)
         self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
@@ -29,12 +28,13 @@ class IrradiationSensor(object):
 
     def sampling(self, delay, id):
         while True:
-            if self.close is True:
+            if self.enabled is True:
+                time.sleep(delay)
+                self.lastRadiation = self.panel.voltage()
+                self.sumRadiation += self.lastRadiation
+                self.sampleCounter += 1
+            else:
                 _thread.exit()
-            time.sleep(delay)
-            self.lastRadiation = self.panel.voltage()
-            self.sumRadiation += self.lastRadiation
-            self.sampleCounter += 1
 
     def updateAtribute(self, atribute, newValue):
         error = False
@@ -60,12 +60,11 @@ class IrradiationSensor(object):
         return data
 
     def disconnect(self):
-        self.close = True
-
-    ''' Funciones Pendientes
+        self.enabled = False
 
     def connect(self):
+        self.enabled = True
+        self.start()
 
     def serviceEnabled(self):
-        return enabled
-    '''
+        return self.enabled
