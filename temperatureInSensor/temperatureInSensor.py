@@ -1,7 +1,7 @@
 import sys
 import _thread
 import time
-#from temperatureInSensor.dht import DHT
+from temperatureInSensor.dht import DHT
 
 class TemperatureInSensor(object):
 
@@ -12,9 +12,9 @@ class TemperatureInSensor(object):
         self.lastTemperature = 0
         self.sumTemperature = 0
         self.sampleCounter = 0
-        self.enabled = True
+        self.enabled = False
         self.sampleThread = 0
-        #self.temp = DHT('P3',1)
+        self.temp = DHT('P3',1)
 
     def confService(self, atributos):
         self.samplingFrequency = atributos['samplingFrecuency']
@@ -28,8 +28,8 @@ class TemperatureInSensor(object):
         while True:
             if self.enabled is True:
                 time.sleep(delay)
-                result = 2#self.temp.read()
-                self.lastTemperature = result#result.temperature/1.0
+                result = self.temp.read()
+                self.lastTemperature = result.temperature/1.0
                 self.sumTemperature += self.lastTemperature
                 self.sampleCounter += 1
             else:
@@ -61,8 +61,9 @@ class TemperatureInSensor(object):
     def disconnect(self):
         self.enabled = False
 
-    def connect(self):
+    def connect(self, atributos):
         self.enabled = True
+        self.confService(atributos)
         self.start()
 
     def serviceEnabled(self):

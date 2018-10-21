@@ -13,7 +13,7 @@ class HumiditySensor(object):
         self.lastHumidity = 0
         self.sumHumidity = 0
         self.sampleCounter = 0
-        self.enabled = True
+        self.enabled = False
         self.sampleThread = 0
         self.humidity = DHT('P3',1)
 
@@ -60,8 +60,9 @@ class HumiditySensor(object):
         self.sampleCounter = 0
         return data
 
-    def connect(self):
-        self.enabled = False
+    def connect(self, atributos):
+        self.enabled = True
+        self.confService(atributos)
         self.start()
 
     def disconnect(self):

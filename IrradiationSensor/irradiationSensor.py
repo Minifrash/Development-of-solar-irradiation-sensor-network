@@ -12,7 +12,7 @@ class IrradiationSensor(object):
         self.lastRadiation = 0
         self.sumRadiation = 0
         self.sampleCounter = 0
-        self.enabled = True
+        self.enabled = False
         self.sampleThread = 0
         self.adc = ADC()
         self.adc.vref(1058)
@@ -62,8 +62,9 @@ class IrradiationSensor(object):
     def disconnect(self):
         self.enabled = False
 
-    def connect(self):
+    def connect(self, atributes):
         self.enabled = True
+        self.confService(atributes)
         self.start()
 
     def serviceEnabled(self):

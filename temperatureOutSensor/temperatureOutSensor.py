@@ -14,7 +14,7 @@ class TemperatureOutSensor(object):
         self.lastTemperature = 0
         self.sumTemperature = 0
         self.sampleCounter = 0
-        self.enabled = True
+        self.enabled = False
         self.sampleThread = 0
         self.powerPin = Pin('P8', mode=Pin.OUT)
         self.powerPin(1)
@@ -68,8 +68,9 @@ class TemperatureOutSensor(object):
     def disconnect(self):
         self.enabled = False
 
-    def connect(self):
+    def connect(self, atributos):
         self.enabled = True
+        self.confService(atributos)
         self.start()
 
     def serviceEnabled(self):
