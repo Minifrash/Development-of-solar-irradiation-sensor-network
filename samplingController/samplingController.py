@@ -65,4 +65,8 @@ class SamplingController(object):
 
     def wakeUp(self):
 
+    def connect(self)
+
+    def disconnect(self)
+
     '''
