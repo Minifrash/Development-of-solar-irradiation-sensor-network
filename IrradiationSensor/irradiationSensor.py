@@ -14,11 +14,14 @@ class IrradiationSensor(object):
         self.sampleCounter = 0
         self.enabled = False
         self.sampleThread = 0
+        self.adc = 0 #ADC()
+        #self.adc.vref(1058)
+        self.panel = 0#self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
+
+    def confService(self, atributes):
         self.adc = ADC()
         self.adc.vref(1058)
         self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
-
-    def confService(self, atributes):
         self.samplingFrequency = atributes['samplingFrecuency']
         self.mode = atributes['mode']
 

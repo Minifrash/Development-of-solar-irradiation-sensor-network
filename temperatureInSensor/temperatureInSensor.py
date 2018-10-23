@@ -14,11 +14,12 @@ class TemperatureInSensor(object):
         self.sampleCounter = 0
         self.enabled = False
         self.sampleThread = 0
-        self.temp = DHT('P3',1)
+        self.temp = 0#DHT('P3',1)
 
-    def confService(self, atributos):
-        self.samplingFrequency = atributos['samplingFrecuency']
-        self.mode = atributos['mode']
+    def confService(self, atributes):
+        self.temp = DHT('P3',1)
+        self.samplingFrequency = atributes['samplingFrecuency']
+        self.mode = atributes['mode']
 
     def start(self):
         # Crear el thread para la funcion sendData()
@@ -61,9 +62,9 @@ class TemperatureInSensor(object):
     def disconnect(self):
         self.enabled = False
 
-    def connect(self, atributos):
+    def connect(self, atributes):
         self.enabled = True
-        self.confService(atributos)
+        self.confService(atributes)
         self.start()
 
     def serviceEnabled(self):

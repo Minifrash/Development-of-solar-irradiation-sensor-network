@@ -13,11 +13,11 @@ class SamplingController(object):
         self.sampleThread = 0
 
     #Tratar posibles errores
-    def confService(self, atributos):
-        self.sendingFrequency = atributos['sendingFrequency']
-        self.samplingFrequency = atributos['samplingFrecuency'] # ¿Haria falta?
-        self.sleepTime = atributos['sleepTime']
-        self.wakeTime = atributos['wakeTime']
+    def confService(self, atributes):
+        self.sendingFrequency = atributes['sendingFrequency']
+        self.samplingFrequency = atributes['samplingFrecuency'] # ¿Haria falta?
+        self.sleepTime = atributes['sleepTime']
+        self.wakeTime = atributes['wakeTime']
 
     def setServicesList(self, sensorsList):
         self.sensorsList = sensorsList
@@ -45,7 +45,7 @@ class SamplingController(object):
     def sendData(self): # Modificar para enviar datos a mensajeriaSensor
         self.ram()
         for i in range(5):
-            time.sleep(5)
+            time.sleep(self.sendingFrequency)
             print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
             for sensor, valor in self.sensorsList.items():
                 print(str(sensor) + " : " + str(valor.getData()))

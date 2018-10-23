@@ -101,13 +101,13 @@ class ServiceManager(object):
 
     def getAtributesConf(self, serviceID):
         fileName = self.servicesList[serviceID].get('path')
-        atributos = self.readFileConf(fileName)
-        return atributos
+        atributes = self.readFileConf(fileName)
+        return atributes
 
     def getAtributeConf(self, serviceID, atribute):
         fileName = self.servicesList[serviceID].get('path')
-        atributos = self.readFileConf(fileName)
-        value = atributos[atribute]
+        atributes = self.readFileConf(fileName)
+        value = atributes[atribute]
         return value
 
     def updateAtributeConf(self, serviceID, atribute, value):

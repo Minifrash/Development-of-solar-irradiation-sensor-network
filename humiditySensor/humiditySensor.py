@@ -15,11 +15,12 @@ class HumiditySensor(object):
         self.sampleCounter = 0
         self.enabled = False
         self.sampleThread = 0
-        self.humidity = DHT('P3',1)
+        self.humidity = 0#DHT('P3',1)
 
-    def confService(self, atributos):
-        self.samplingFrequency = atributos['samplingFrecuency']
-        self.mode = atributos['mode']
+    def confService(self, atributes): # posible error de no contener todos los atributes esperados
+        self.humidity = DHT('P3',1)
+        self.samplingFrequency = atributes['samplingFrecuency']
+        self.mode = atributes['mode']
 
     def start(self):
         # Crear el thread para la funcion sendData()
@@ -60,9 +61,9 @@ class HumiditySensor(object):
         self.sampleCounter = 0
         return data
 
-    def connect(self, atributos):
+    def connect(self, atributes):
         self.enabled = True
-        self.confService(atributos)
+        self.confService(atributes)
         self.start()
 
     def disconnect(self):

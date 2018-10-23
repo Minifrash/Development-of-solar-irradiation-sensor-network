@@ -16,15 +16,20 @@ class TemperatureOutSensor(object):
         self.sampleCounter = 0
         self.enabled = False
         self.sampleThread = 0
+        self.powerPin = 0 #Pin('P8', mode=Pin.OUT)
+        #self.powerPin(1)
+        self.ow = 0 #OneWire(Pin('P4'))
+        self.temp = 0 #DS18X20(self.ow) # DS18X20 must be powered on on instantiation (rom scan)
+        #self.powerPin(0)
+
+    def confService(self, atributes):
         self.powerPin = Pin('P8', mode=Pin.OUT)
         self.powerPin(1)
         self.ow = OneWire(Pin('P4'))
         self.temp = DS18X20(self.ow) # DS18X20 must be powered on on instantiation (rom scan)
         self.powerPin(0)
-
-    def confService(self, atributos):
-        self.samplingFrequency = atributos['samplingFrecuency']
-        self.mode = atributos['mode']
+        self.samplingFrequency = atributes['samplingFrecuency']
+        self.mode = atributes['mode']
 
     def start(self):
         # Crear el thread para la funcion sendData()
@@ -68,9 +73,9 @@ class TemperatureOutSensor(object):
     def disconnect(self):
         self.enabled = False
 
-    def connect(self, atributos):
+    def connect(self, atributes):
         self.enabled = True
-        self.confService(atributos)
+        self.confService(atributes)
         self.start()
 
     def serviceEnabled(self):
