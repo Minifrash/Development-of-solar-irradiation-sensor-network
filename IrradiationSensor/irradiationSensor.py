@@ -1,7 +1,7 @@
 import sys
 import _thread
 import time
-from machine import ADC
+#from machine import ADC
 
 class IrradiationSensor(object):
 
@@ -19,9 +19,9 @@ class IrradiationSensor(object):
         self.panel = 0#self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
 
     def confService(self, atributes):
-        self.adc = ADC()
-        self.adc.vref(1058)
-        self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
+        #self.adc = ADC()
+        #self.adc.vref(1058)
+        #self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
         self.samplingFrequency = atributes['samplingFrecuency']
         self.mode = atributes['mode']
 
@@ -33,7 +33,7 @@ class IrradiationSensor(object):
         while True:
             if self.enabled is True:
                 time.sleep(delay)
-                self.lastRadiation = self.panel.voltage()
+                self.lastRadiation = 2#self.panel.voltage()
                 self.sumRadiation += self.lastRadiation
                 self.sampleCounter += 1
             else:

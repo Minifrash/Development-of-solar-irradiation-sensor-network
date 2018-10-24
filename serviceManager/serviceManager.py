@@ -1,21 +1,25 @@
 import sys
-#sys.path.append('./samplingController')
-#sys.path.append('./temperatureOutSensor')
-#sys.path.append('./temperatureInSensor')
-#sys.path.append('./humiditySensor')
-#sys.path.append('./irradiationSensor')
+sys.path.append('./samplingController')
+sys.path.append('./temperatureOutSensor')
+sys.path.append('./temperatureInSensor')
+sys.path.append('./humiditySensor')
+sys.path.append('./irradiationSensor')
+sys.path.append('./dht22')
 
-#from samplingController import SamplingController
-#from temperatureOutSensor import TemperatureOutSensor
-#from temperatureInSensor import TemperatureInSensor
-#from humiditySensor import HumiditySensor
-#from irradiationSensor import IrradiationSensor
+from samplingController import SamplingController
+from temperatureOutSensor import TemperatureOutSensor
+from temperatureInSensor import TemperatureInSensor
+from humiditySensor import HumiditySensor
+from irradiationSensor import IrradiationSensor
+from dht22 import DHT22
 
-from samplingController.samplingController import SamplingController
-from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
-from temperatureInSensor.temperatureInSensor import TemperatureInSensor
-from humiditySensor.humiditySensor import HumiditySensor
-from irradiationSensor.irradiationSensor import IrradiationSensor
+#from samplingController.samplingController import SamplingController
+#from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
+#from temperatureInSensor.temperatureInSensor import TemperatureInSensor
+#from humiditySensor.humiditySensor import HumiditySensor
+#from irradiationSensor.irradiationSensor import IrradiationSensor
+#from dht22.dht22 import DHT22
+
 
 class ServiceManager(object):
 
@@ -30,6 +34,7 @@ class ServiceManager(object):
         self.temperatureInSensor = TemperatureInSensor()
         self.humiditySensor = HumiditySensor()
         self.temperatureOutSensor = TemperatureOutSensor()
+        self.dh = DHT22()
 
     def start(self):
         self.servicesList = self.readFileConf('./serviceManager/conf.txt')
@@ -50,11 +55,11 @@ class ServiceManager(object):
             elif serviceID == 4 and value.get('serviceEnabled') == 1:
                 atributes = self.getAtributesConf(serviceID)
                 self.sensorsList.setdefault(serviceID, self.temperatureInSensor)
-                self.temperatureInSensor.connect(atributes)
+                self.temperatureInSensor.connect(atributes, self.dh)
             elif serviceID == 5 and value.get('serviceEnabled') == 1:
                 atributes = self.getAtributesConf(serviceID)
                 self.sensorsList.setdefault(serviceID, self.humiditySensor)
-                self.humiditySensor.connect(atributes)
+                self.humiditySensor.connect(atributes, self.dh)
             elif serviceID == 6 and value.get('serviceEnabled') == 1:
                 atributes = self.getAtributesConf(serviceID)
                 self.sensorsList.setdefault(serviceID, self.temperatureOutSensor)
