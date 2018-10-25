@@ -2,7 +2,7 @@ import sys
 import _thread
 import time
 import gc
-from humiditySensor.dht import DHT
+from libraries.dht import DHT
 
 class HumiditySensor(object):
 
