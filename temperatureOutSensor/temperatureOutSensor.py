@@ -1,9 +1,9 @@
 import sys
 import _thread
 import time
-#from machine import Pin
-#from temperatureOutSensor.onewire import DS18X20
-#from temperatureOutSensor.onewire import OneWire
+from machine import Pin
+from libraries.onewire import DS18X20
+from libraries.onewire import OneWire
 
 class TemperatureOutSensor(object):
 

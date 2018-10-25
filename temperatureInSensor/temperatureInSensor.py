@@ -1,7 +1,7 @@
 import sys
 import _thread
 import time
-#from temperatureInSensor.dht import DHT
+from libraries.dht import DHT
 
 class TemperatureInSensor(object):
 
