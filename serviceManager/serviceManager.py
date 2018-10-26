@@ -23,6 +23,7 @@ class ServiceManager(object):
         self.serviceID = 0
         self.servicesList =  dict()
         self.sensorsList = dict()
+        self.error = 0
 
         self.samplingController = SamplingController()
         #self.locationSensor = LocationSensor()
@@ -60,8 +61,9 @@ class ServiceManager(object):
                 self.sensorsList.setdefault(serviceID, self.temperatureOutSensor)
                 self.temperatureOutSensor.connect(atributes)
             else:
-                error = -1
-        return error
+                error = -5
+                self.error = -5 #NoService Error code
+        return error #delvolver self.error?
 
     def addServicesList(self, serviceID, path, serviceEnabled):
         newService = {'path': path, 'serviceEnabled':serviceEnabled}
@@ -80,24 +82,26 @@ class ServiceManager(object):
         return self.servicesList
 
     def readFileConf(self, fileName):
-        #try
-        f = open(fileName, "r")
-        dic = eval(f.read())
-        f.close()
-        #except IOError:
-        error = -1 #-1 es un ejemplo, dependerá de la política de errores
+        dic = 0
+        try:
+            f = open(fileName, "r")
+            dic = eval(f.read())
+            f.close()
+        except IOError:
+            #self.error = -1 #IOError code
+            dic = -1
         return dic
 
     # REPASAR ¿Como se refleja un posible error?
     def writeFileConf(self, fileName, data):
         error = 0
-        #try:
-        f = open(fileName, "w")
-        f.write(str(data))
-        f.close()
-        #except IOError:
-        error = -1 #-1 es un ejemplo, dependeráos.uname() de la política de errores
-        return error
+        try:
+            f = open(fileName, "w")
+            f.write(str(data))
+            f.close()
+        except IOError:
+            self.error = -1 #IOError code
+        return error #delvolver self.error?
 
     def getAtributesConf(self, serviceID):
         fileName = self.servicesList[serviceID].get('path')
@@ -135,9 +139,11 @@ class ServiceManager(object):
                  self.sensorsList[serviceID].connect(atributes)
              else:
                  error = -1
+                 self.error = -6 #Active Service Error code
         else:
             error = -1
-        return error
+            self.error = -5 #NoService Error code
+        return error #delvolver self.error?
 
     def stopService(self, serviceID):
         if serviceID in self.servicesList:
@@ -148,9 +154,11 @@ class ServiceManager(object):
                  self.sensorsList[serviceID].disconnect()
              else:
                  error = -1
+                 self.error = -7 #Non-Active Service Error
         else:
             error = -1
-        return error
+            self.error = -5 #NoService Error code
+        return error #delvolver self.error?
 
     def restartService(self, serviceID): # REVISAR
         self.stopService(serviceID)
