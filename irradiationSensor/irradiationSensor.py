@@ -1,7 +1,7 @@
 import sys
 import _thread
 import time
-from machine import ADC
+#from machine import ADC
 
 class IrradiationSensor(object):
 
@@ -14,14 +14,15 @@ class IrradiationSensor(object):
         self.sampleCounter = 0
         self.enabled = False
         self.sampleThread = 0
-        self.adc = 0 #ADC()
-        #self.adc.vref(1058)
-        self.panel = 0#self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
+        self.adc = 0
+        self.panel = 0
+        self.lock = 0
 
-    def confService(self, atributes):
-        self.adc = ADC()
-        self.adc.vref(1058)
-        self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
+    def confService(self, atributes, lock):
+        #self.adc = ADC()
+        #self.adc.vref(1058)
+        #self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
+        self.lock = lock
         self.samplingFrequency = atributes['samplingFrecuency']
         self.mode = atributes['mode']
 
@@ -32,10 +33,12 @@ class IrradiationSensor(object):
     def sampling(self, delay, id):
         while True:
             if self.enabled is True:
-                time.sleep(delay)
-                self.lastRadiation = self.panel.voltage()
+                self.lock.acquire()
+                self.lastRadiation = 2#self.panel.voltage()
                 self.sumRadiation += self.lastRadiation
                 self.sampleCounter += 1
+                self.lock.release()
+                time.sleep(delay)
             else:
                 _thread.exit()
 
@@ -52,6 +55,7 @@ class IrradiationSensor(object):
 
     def getData(self):
         data = -1 # Posible error
+        self.lock.acquire()
         if self.mode == 0:
             data = self.sumRadiation/self.sampleCounter
         elif self.mode == 1:
@@ -60,14 +64,15 @@ class IrradiationSensor(object):
             data = -1
         self.sumRadiation = 0
         self.sampleCounter = 0
+        self.lock.release()
         return data
 
     def disconnect(self):
         self.enabled = False
 
-    def connect(self, atributes):
+    def connect(self, atributes, lock):
         self.enabled = True
-        self.confService(atributes)
+        self.confService(atributes, lock)
         self.start()
 
     def serviceEnabled(self):

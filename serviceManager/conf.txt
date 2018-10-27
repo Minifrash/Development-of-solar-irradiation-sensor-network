@@ -1,7 +1,1 @@
-{0: {'path': './serviceManager/conf.txt', 'serviceEnabled': 1, 'serviceSensor':0},
-1: {'path': './samplingController/conf.txt', 'serviceEnabled': 1, 'serviceSensor':0},
-2: {'path': './locationSensor/conf.txt', 'serviceEnabled': 0, 'serviceSensor':1},
-3: {'path': './irradiationSensor/conf.txt', 'serviceEnabled': 1, 'serviceSensor':1},
-4: {'path': './temperatureInSensor/conf.txt', 'serviceEnabled': 1, 'serviceSensor':1},
-5: {'path': './humiditySensor/conf.txt', 'serviceEnabled': 1, 'serviceSensor':1},
-6: {'path': './temperatureOutSensor/conf.txt', 'serviceEnabled': 1, 'serviceSensor':1}}
+{0: {'path': './serviceManager/conf.txt', 'serviceEnabled': 1, 'serviceSensor': 0}, 1: {'path': './samplingController/conf.txt', 'serviceEnabled': 1, 'serviceSensor': 0}, 2: {'path': './locationSensor/conf.txt', 'serviceEnabled': 0, 'serviceSensor': 1}, 3: {'path': './irradiationSensor/conf.txt', 'serviceEnabled': 0, 'serviceSensor': 1}, 4: {'path': './temperatureInSensor/conf.txt', 'serviceEnabled': 0, 'serviceSensor': 1}, 5: {'path': './humiditySensor/conf.txt', 'serviceEnabled': 0, 'serviceSensor': 1}, 6: {'path': './temperatureOutSensor/conf.txt', 'serviceEnabled': 0, 'serviceSensor': 1}}

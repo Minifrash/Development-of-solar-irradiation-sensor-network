@@ -50,8 +50,8 @@ class SamplingController(object):
             for sensor, valor in self.sensorsList.items():
                 print(str(sensor) + " : " + str(valor.getData()))
         #        self.ram()
-        for thread in self.sensorsList.values():
-            thread.disconnect()
+        #for thread in self.sensorsList.values():
+        #    thread.disconnect()
         #self.ram()
 
     def ram(self):
@@ -60,13 +60,14 @@ class SamplingController(object):
         #print('Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
         print('-----------------------------')
 
+    def connect(self, atributes, sensorsList):
+        self.confService(atributes)
+        self.start(sensorsList)
+
     ''' Funciones pendientes
     def sleep(self):
 
     def wakeUp(self):
 
-    def connect(self)
-
-    def disconnect(self)
-
+    def disconnect(self):
     '''

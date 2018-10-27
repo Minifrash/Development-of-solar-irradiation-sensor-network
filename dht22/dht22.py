@@ -17,6 +17,7 @@ class DHT22(object):
         self.samplingFrequency = 1
         self.sampleThread = 0
         self.dht = 0
+        self.lock = 0
         self.enabled = False
 
     def conf(self, samplingFrequency):
@@ -30,7 +31,7 @@ class DHT22(object):
     def sampling(self, delay, id):
         while True:
             if self.enabledHumidity is True or self.enabledTemperature is True:
-                time.sleep(delay)
+                self.lock.acquire()
                 result = 2#self.humidity.read()
                 if self.enabledHumidity is True:
                     #print("H")
@@ -43,12 +44,15 @@ class DHT22(object):
                     self.sumTemperature += self.lastTemperature
                     self.sampleCounterTemperature += 1
                 #gc.collect()
+                self.lock.release()
+                time.sleep(delay)
             else:
                 _thread.exit()
 
 
     def getHumidity(self, mode):
         data = -1 # Posible error
+        self.lock.acquire()
         if self.enabledHumidity is True:
             if mode == 0:
                 data = self.sumHumidity/self.sampleCounterHumidity
@@ -60,10 +64,12 @@ class DHT22(object):
             self.sampleCounterHumidity = 0
         else:
             error = -1 #Servicio desconectado
+        self.lock.release()
         return data
 
     def getTemperature(self, mode):
         data = -1 # Posible error
+        self.lock.acquire()
         if self.enabledTemperature is True:
             if mode == 0:
                 data = self.sumTemperature/self.sampleCounterTemperature
@@ -75,10 +81,11 @@ class DHT22(object):
             self.sampleCounterTemperature = 0
         else:
             error = -1 #Servicio desconectado
+        self.lock.release()
         return data
 
 
-    def connect(self, serviceID, samplingFrequency):
+    def connect(self, serviceID, samplingFrequency, lock):
         error = 0
         if serviceID == 4 and self.enabledTemperature is False:
             self.enabledTemperature = True
@@ -89,6 +96,7 @@ class DHT22(object):
 
         if self.enabled is False:
             self.enabled = True
+            self.lock = lock
             self.conf(samplingFrequency)
             self.start()
         return error

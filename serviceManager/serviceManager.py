@@ -1,4 +1,5 @@
 import sys
+import _thread
 sys.path.append('./samplingController')
 sys.path.append('./temperatureOutSensor')
 sys.path.append('./temperatureInSensor')
@@ -27,46 +28,58 @@ class ServiceManager(object):
         self.serviceID = 0
         self.servicesList =  dict()
         self.sensorsList = dict()
-
+        self.lock = 0
         self.samplingController = SamplingController()
         #self.locationSensor = LocationSensor()
         self.irradiationSensor = IrradiationSensor()
         self.temperatureInSensor = TemperatureInSensor()
         self.humiditySensor = HumiditySensor()
         self.temperatureOutSensor = TemperatureOutSensor()
-        self.dh = DHT22()
+        self.dht = DHT22()
+
+    def confService(self):
+        self.servicesList = self.readFileConf('./serviceManager/conf.txt')
+        self.lock = _thread.allocate_lock()
 
     def start(self):
-        self.servicesList = self.readFileConf('./serviceManager/conf.txt')
+        self.confService()
+        self.wakeAllSensorsServices()
         self.wakeAllServices()
-        self.samplingController.start(self.sensorsList)
+        #self.samplingController.start(self.sensorsList)
         self.samplingController.sendData()
 
-    def wakeAllServices(self):  # ¿Posible reducir codido?
-        error = 0
+    def wakeAllServices(self): # Add locationService
         for serviceID, value in self.servicesList.items():
             if serviceID == 1 and value.get('serviceEnabled') == 1:
                 atributes = self.getAtributesConf(serviceID)
-                self.samplingController.confService(atributes)
-            elif serviceID == 3 and value.get('serviceEnabled') == 1:
-                atributes = self.getAtributesConf(serviceID)
-                self.sensorsList.setdefault(serviceID, self.irradiationSensor)
-                self.irradiationSensor.connect(atributes)
-            elif serviceID == 4 and value.get('serviceEnabled') == 1:
-                atributes = self.getAtributesConf(serviceID)
-                self.sensorsList.setdefault(serviceID, self.temperatureInSensor)
-                self.temperatureInSensor.connect(atributes, self.dh)
-            elif serviceID == 5 and value.get('serviceEnabled') == 1:
-                atributes = self.getAtributesConf(serviceID)
-                self.sensorsList.setdefault(serviceID, self.humiditySensor)
-                self.humiditySensor.connect(atributes, self.dh)
-            elif serviceID == 6 and value.get('serviceEnabled') == 1:
-                atributes = self.getAtributesConf(serviceID)
-                self.sensorsList.setdefault(serviceID, self.temperatureOutSensor)
-                self.temperatureOutSensor.connect(atributes)
-            else:
-                error = -1
+                self.samplingController.connect(atributes, self.sensorsList)
+
+    def wakeAllSensorsServices(self):  # REPASAR
+        error = 0
+        for serviceID, value in self.servicesList.items():
+            self.wakeSensorsServices(serviceID, value)
         return error
+
+    def wakeSensorsServices(self, serviceID, value):
+        #if serviceID == 1 and value.get('serviceEnabled') == 1:
+            #atributes = self.getAtributesConf(serviceID)
+            #self.samplingController.confService(atributes)
+        if serviceID == 3 and value.get('serviceEnabled') == 1:
+            atributes = self.getAtributesConf(serviceID)
+            self.sensorsList.setdefault(serviceID, self.irradiationSensor)
+            self.irradiationSensor.connect(atributes, self.lock)
+        if serviceID == 4 and value.get('serviceEnabled') == 1:
+            atributes = self.getAtributesConf(serviceID)
+            self.sensorsList.setdefault(serviceID, self.temperatureInSensor)
+            self.temperatureInSensor.connect(atributes, self.dht, self.lock)
+        if serviceID == 5 and value.get('serviceEnabled') == 1:
+            atributes = self.getAtributesConf(serviceID)
+            self.sensorsList.setdefault(serviceID, self.humiditySensor)
+            self.humiditySensor.connect(atributes, self.dht, self.lock)
+        if serviceID == 6 and value.get('serviceEnabled') == 1:
+            atributes = self.getAtributesConf(serviceID)
+            self.sensorsList.setdefault(serviceID, self.temperatureOutSensor)
+            self.temperatureOutSensor.connect(atributes, self.lock)
 
     def addServicesList(self, serviceID, path, serviceEnabled):
         newService = {'path': path, 'serviceEnabled':serviceEnabled}
@@ -131,26 +144,33 @@ class ServiceManager(object):
         return error
 
     def startService(self, serviceID): # ¿Tener en cuenta posible segunda lista de instancias para los servicios que no son sensores?
+        error = 0
         if serviceID in self.servicesList:
-             if 'serviceEnabled' in self.servicesList[serviceID] and self.servicesList[serviceID].get('serviceEnabled') == 0:
+            if 'serviceEnabled' in self.servicesList[serviceID] and self.servicesList[serviceID].get('serviceEnabled') == 0:
                  self.servicesList[serviceID]['serviceEnabled'] = 1
                  fileName = self.servicesList[self.serviceID].get('path')
                  self.writeFileConf(fileName, self.servicesList)
                  atributes = self.getAtributesConf(serviceID)
-                 self.sensorsList[serviceID].connect(atributes)
-             else:
+                 if self.servicesList[serviceID].get('serviceSensor') == 1:
+                     self.wakeSensorsServices(serviceID, self.servicesList.setdefault(serviceID))
+                 else:
+                    error = -1
+            else:
                  error = -1
         else:
             error = -1
         return error
 
     def stopService(self, serviceID):
+        error = 0
         if serviceID in self.servicesList:
              if 'serviceEnabled' in self.servicesList[serviceID] and self.servicesList[serviceID].get('serviceEnabled') == 1:
                  self.servicesList[serviceID]['serviceEnabled'] = 0
                  fileName = self.servicesList[self.serviceID].get('path')
                  self.writeFileConf(fileName, self.servicesList)
-                 self.sensorsList[serviceID].disconnect()
+                 if self.servicesList[serviceID].get('serviceSensor') == 1:
+                     self.sensorsList[serviceID].disconnect()
+                     self.sensorsList.pop(serviceID)
              else:
                  error = -1
         else:
@@ -161,16 +181,19 @@ class ServiceManager(object):
         self.stopService(serviceID)
         self.startService(serviceID)
 
-    '''  Funciones pendientes
-
-    def updateFileNameService(self, serviceID, fileName)  #¿Para que se usa?
-
-    '''
-
 
 def main():
     sm = ServiceManager()
+    sm.confService()
+    sm.startService(3)
+    sm.startService(4)
+    sm.startService(5)
+    sm.startService(6)
     sm.start()
+    sm.stopService(3)
+    sm.stopService(4)
+    sm.stopService(5)
+    sm.stopService(6)
 
 
 main()

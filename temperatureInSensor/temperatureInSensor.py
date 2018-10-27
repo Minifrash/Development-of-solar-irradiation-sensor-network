@@ -16,15 +16,17 @@ class TemperatureInSensor(object):
         self.sampleThread = 0
         self.temp = 0#DHT('P3',1)
         self.dht = 0
+        self.lock = 0
 
-    def confService(self, atributes, dht):
+    def confService(self, atributes, dht, lock):
         #self.temp = DHT('P3',1)
+        self.lock = lock
         self.dht = dht
         self.samplingFrequency = atributes['samplingFrecuency']
         self.mode = atributes['mode']
 
     def start(self):
-        self.dht.connect(self.serviceID, self.samplingFrequency)
+        self.dht.connect(self.serviceID, self.samplingFrequency, self.lock)
         #self.dht.start()
 
     def updateAtribute(self, atribute, newValue):
@@ -41,9 +43,9 @@ class TemperatureInSensor(object):
         data = self.dht.getTemperature(self.mode)
         return data
 
-    def connect(self, atributes, dht):
+    def connect(self, atributes, dht, lock):
         self.enabled = True
-        self.confService(atributes, dht)
+        self.confService(atributes, dht, lock)
         self.start()
 
     def disconnect(self):
