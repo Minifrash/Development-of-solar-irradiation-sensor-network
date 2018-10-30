@@ -1,7 +1,9 @@
 import sys
 import _thread
 import time
-import random
+import gc
+from libraries.dht import DHT
+#import random
 
 class DHT22(object):
 
@@ -22,28 +24,31 @@ class DHT22(object):
 
     def conf(self, samplingFrequency):
         self.samplingFrequency = samplingFrequency
+        self.dht =  DHT('P3',1)
 
     def start(self):
-        #self.dht =  DHT('P3',1)
         if self.sampleThread == 0:
             self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,5))
 
     def sampling(self, delay, id):
         while True:
-            if self.enabledHumidity is True or self.enabledTemperature is True:
+            if self.enabled == True:
+                result = self.dht.read()
                 self.lock.acquire()
-                result = 2#self.humidity.read()
+                #result = self.dht.read()
                 if self.enabledHumidity is True:
                     #print("H")
-                    self.lastHumidity = random.randrange(10)#2#result.humidity/1.0
+                    #print(result.humidity)
+                    self.lastHumidity = result.humidity/1.0
                     self.sumHumidity += self.lastHumidity
                     self.sampleCounterHumidity += 1
                 if self.enabledTemperature is True:
                     #print("T")
-                    self.lastTemperature = random.randrange(10)#3#result.temperature/1.0
+                    #print(result.temperature)
+                    self.lastTemperature = result.temperature/1.0
                     self.sumTemperature += self.lastTemperature
                     self.sampleCounterTemperature += 1
-                #gc.collect()
+                gc.collect()
                 self.lock.release()
                 time.sleep(delay)
             else:
@@ -102,13 +107,13 @@ class DHT22(object):
         return error
 
     def disconnect(self, serviceID):
-        if serviceID == 4 and self.enabledTemperature is True:
+        if serviceID == 4 and self.enabledTemperature == True:
             self.enabledTemperature = False
-        elif serviceID == 5 and self.enabledHumidity is True:
-            self.enabledHumidity == False
+        elif serviceID == 5 and self.enabledHumidity == True:
+            self.enabledHumidity = False
         else:
             error = -1 #Fallo en el serviceID o ya esta conectado
 
-        if self.enabledTemperature is False and self.enabledHumidity is False:
+        if self.enabledTemperature == False and self.enabledHumidity == False:
             self.sampleThread = 0
             self.enabled = False

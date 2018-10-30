@@ -2,7 +2,7 @@ import sys
 import _thread
 import time
 import gc
-#from libraries.dht import DHT
+from libraries.dht import DHT
 
 class HumiditySensor(object):
 
@@ -20,7 +20,7 @@ class HumiditySensor(object):
         self.lock = 0
 
     def confService(self, atributes, dht, lock): # posible error de no contener todos los atributes esperados
-        #self.humidity = DHT('P3',1)
+        self.humidity = DHT('P3',1)
         self.lock = lock
         self.dht = dht
         self.samplingFrequency = atributes['samplingFrecuency']

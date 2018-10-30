@@ -1,9 +1,9 @@
 import sys
 import _thread
 import time
-#from machine import Pin
-#from libraries.onewire import DS18X20
-#from libraries.onewire import OneWire
+from machine import Pin
+from libraries.onewire import DS18X20
+from libraries.onewire import OneWire
 
 class TemperatureOutSensor(object):
 
@@ -22,11 +22,11 @@ class TemperatureOutSensor(object):
         self.lock = 0
 
     def confService(self, atributes, lock):
-        #self.powerPin = Pin('P8', mode=Pin.OUT)
-        #self.powerPin(1)
-        #self.ow = OneWire(Pin('P4'))
-        #self.temp = DS18X20(self.ow) # DS18X20 must be powered on on instantiation (rom scan)
-        #self.powerPin(0)
+        self.powerPin = Pin('P8', mode=Pin.OUT)
+        self.powerPin(1)
+        self.ow = OneWire(Pin('P4'))
+        self.temp = DS18X20(self.ow) # DS18X20 must be powered on on instantiation (rom scan)
+        self.powerPin(0)
         self.lock = lock
         self.samplingFrequency = atributes['samplingFrecuency']
         self.mode = atributes['mode']
@@ -39,14 +39,15 @@ class TemperatureOutSensor(object):
         while True:
             if self.enabled is True:
                 self.lock.acquire()
-                #self.powerPin(1)
-                #self.temp.start_convertion()
-                self.lastTemperature = 2#self.temp.read_temp_async()
+                self.powerPin(1)
+                self.temp.start_convertion()
+                time.sleep(delay)
+                self.lastTemperature = self.temp.read_temp_async()
                 self.sumTemperature += self.lastTemperature
                 self.sampleCounter += 1
-                #self.powerPin(0)
+                self.powerPin(0)
                 self.lock.release()
-                time.sleep(delay)
+
             else:
                 _thread.exit()
 

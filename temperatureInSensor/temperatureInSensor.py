@@ -1,7 +1,7 @@
 import sys
 import _thread
 import time
-#from libraries.dht import DHT
+from libraries.dht import DHT
 
 class TemperatureInSensor(object):
 
@@ -19,7 +19,7 @@ class TemperatureInSensor(object):
         self.lock = 0
 
     def confService(self, atributes, dht, lock):
-        #self.temp = DHT('P3',1)
+        self.temp = DHT('P3',1)
         self.lock = lock
         self.dht = dht
         self.samplingFrequency = atributes['samplingFrecuency']

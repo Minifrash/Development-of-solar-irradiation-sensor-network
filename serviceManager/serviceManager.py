@@ -1,25 +1,26 @@
 import sys
 import _thread
-sys.path.append('./samplingController')
-sys.path.append('./temperatureOutSensor')
-sys.path.append('./temperatureInSensor')
-sys.path.append('./humiditySensor')
-sys.path.append('./irradiationSensor')
-sys.path.append('./dht22')
+#sys.path.append('./samplingController')
+#sys.path.append('./temperatureOutSensor')
+#sys.path.append('./temperatureInSensor')
+#sys.path.append('./humiditySensor')
+#sys.path.append('./irradiationSensor')
+#sys.path.append('./dht22')
 
-from samplingController import SamplingController
-from temperatureOutSensor import TemperatureOutSensor
-from temperatureInSensor import TemperatureInSensor
-from humiditySensor import HumiditySensor
-from irradiationSensor import IrradiationSensor
-from dht22 import DHT22
+#from samplingController import SamplingController
+#from temperatureOutSensor import TemperatureOutSensor
+#from temperatureInSensor import TemperatureInSensor
+#from humiditySensor import HumiditySensor
+#from irradiationSensor import IrradiationSensor
+#from dht22 import DHT22
 
-#from samplingController.samplingController import SamplingController
-#from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
-#from temperatureInSensor.temperatureInSensor import TemperatureInSensor
-#from humiditySensor.humiditySensor import HumiditySensor
-#from irradiationSensor.irradiationSensor import IrradiationSensor
-#from dht22.dht22 import DHT22
+from samplingController.samplingController import SamplingController
+from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
+from temperatureInSensor.temperatureInSensor import TemperatureInSensor
+from humiditySensor.humiditySensor import HumiditySensor
+from irradiationSensor.irradiationSensor import IrradiationSensor
+from locationSensor.locationSensor import LocationSensor
+from dht22.dht22 import DHT22
 
 
 class ServiceManager(object):
@@ -30,7 +31,7 @@ class ServiceManager(object):
         self.sensorsList = dict()
         self.lock = 0
         self.samplingController = SamplingController()
-        #self.locationSensor = LocationSensor()
+        self.locationSensor = LocationSensor()
         self.irradiationSensor = IrradiationSensor()
         self.temperatureInSensor = TemperatureInSensor()
         self.humiditySensor = HumiditySensor()
@@ -64,6 +65,10 @@ class ServiceManager(object):
         #if serviceID == 1 and value.get('serviceEnabled') == 1:
             #atributes = self.getAtributesConf(serviceID)
             #self.samplingController.confService(atributes)
+        if serviceID == 2 and value.get('serviceEnabled') == 1:
+            atributes = self.getAtributesConf(serviceID)
+            self.sensorsList.setdefault(serviceID, self.locationSensor)
+            self.locationSensor.connect(atributes, self.lock)
         if serviceID == 3 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             self.sensorsList.setdefault(serviceID, self.irradiationSensor)
@@ -184,16 +189,16 @@ class ServiceManager(object):
 
 def main():
     sm = ServiceManager()
-    sm.confService()
-    sm.startService(3)
-    sm.startService(4)
-    sm.startService(5)
-    sm.startService(6)
+    #sm.confService()
+    #sm.startService(3)
+    #sm.startService(4)
+    #sm.startService(5)
+    #sm.startService(6)
     sm.start()
-    sm.stopService(3)
-    sm.stopService(4)
-    sm.stopService(5)
-    sm.stopService(6)
+    #sm.stopService(3)
+    #sm.stopService(4)
+    #sm.stopService(5)
+    #sm.stopService(6)
 
 
 main()
