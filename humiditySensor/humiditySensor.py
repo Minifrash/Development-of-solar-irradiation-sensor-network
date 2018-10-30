@@ -16,58 +16,48 @@ class HumiditySensor(object):
         self.enabled = False
         self.sampleThread = 0
         self.humidity = 0#DHT('P3',1)
+        self.dht = 0
+        self.lock = 0
 
     def confService(self, atributes): # posible error de no contener todos los atributes esperados
         self.humidity = DHT('P3',1)
+        self.lock = lock
+        self.dht = dht
         self.samplingFrequency = atributes['samplingFrecuency']
+        if not self.samplingFrequency.isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
+            self.error = -9 #Incorrect AtributeValue Error
         self.mode = atributes['mode']
+        if not self.mode.isdigit() or self.mode < 0: #Comprobar si es un numero (isdigit) y si es negativo
+            self.error = -9 #Incorrect AtributeValue Error
 
     def start(self):
-        # Crear el thread para la funcion sendData()
-        self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,5))
-
-    def sampling(self, delay, id):
-        while True:
-            if self.enabled is True:
-                time.sleep(delay)
-                result = self.humidity.read()
-                self.lastHumidity = result.humidity/1.0
-                self.sumHumidity += self.lastHumidity
-                self.sampleCounter += 1
-                gc.collect()
-            else:
-                _thread.exit()
+        self.dht.connect(self.serviceID, self.samplingFrequency, self.lock)
 
     def updateAtribute(self, atribute, newValue):
-        error = False
+        error = 0
+        if not newValue.isdigit() or newValue < 0: #¿Lo hace serviceManager?
+            self.error = -9 #Incorrect AtributeValue Error
         if atribute == 'samplingFrequency':
             self.samplingFrequency = newValue
         elif atribute == 'mode':
             self.mode = newValue
         else:
-            error = True # error de atributo incorrecto
+            error = -8 # error de atributo incorrecto
         return error
 
 
     def getData(self):
-        data = -1 # Posible error
-        if self.mode == 0:
-            data = self.sumHumidity/self.sampleCounter
-        elif self.mode == 1:
-            data = self.lastHumidity
-        else:
-            data = -1
-        self.sumHumidity = 0
-        self.sampleCounter = 0
+        data = self.dht.getHumidity(self.mode)
         return data
 
     def connect(self, atributes):
         self.enabled = True
-        self.confService(atributes)
+        self.confService(atributes, dht, lock)
         self.start()
 
     def disconnect(self):
         self.enabled = False
+        self.dht.disconnect(self.serviceID)
 
     def serviceEnabled(self):
         return self.enabled

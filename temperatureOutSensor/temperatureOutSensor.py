@@ -19,8 +19,8 @@ class TemperatureOutSensor(object):
         self.powerPin = 0 #Pin('P8', mode=Pin.OUT)
         self.ow = 0 #OneWire(Pin('P4'))
         self.temp = 0 #DS18X20(self.ow) # DS18X20 must be powered on on instantiation (rom scan)
-        self.error = 0
-        self.erCounter = 3
+        self.error = 0 #Codigo de error o cero si todo bien
+        self.erCounter = 3 #Contador para reintentos tras error
 
     def confService(self, atributes):
         self.powerPin = Pin('P8', mode=Pin.OUT)
@@ -29,16 +29,20 @@ class TemperatureOutSensor(object):
         self.temp = DS18X20(self.ow) # DS18X20 must be powered on on instantiation (rom scan)
         self.powerPin(0)
         self.samplingFrequency = atributes['samplingFrecuency']
-        #Comprobar si es un numero (isdigit) y si es negativo
+        if not self.samplingFrequency.isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
+            self.error = -9 #Incorrect AtributeValue Error
         self.mode = atributes['mode']
-        #Comprobar si es un numero (isdigit) y si es negativo
+        if not self.mode.isdigit() or self.mode < 0: #Comprobar si es un numero (isdigit) y si es negativo
+            self.error = -9 #Incorrect AtributeValue Error
 
     def start(self):
-        # Crear el thread para la funcion sendData()
+        error = 0
         try:
             self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,6))
         except:
-            self.error = -3 #CreateThread Error code
+            error = -3 #CreateThread Error code
+            #self.error = -3
+        return error
 
     def sampling(self, delay, id):
         while True:
@@ -47,11 +51,11 @@ class TemperatureOutSensor(object):
                 self.temp.start_convertion()
                 time.sleep(delay)
                 self.lastTemperature = self.temp.read_temp_async()
-                #Bucle de lecturas si se cumple el siguiente if
                 count = 0
                 while((self.lastTemperature < (-55.0) or self.lastTemperature > 125.0) and count < self.erCounter):
                     self.lastTemperature = self.temp.read_temp_async()
                     count += 1
+                count = 0
                 if (self.lastTemperature < (-55.0) or self.lastTemperature > 125.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
                     self.error = -11 #Incorrect Value Error code
                 else:
@@ -66,26 +70,30 @@ class TemperatureOutSensor(object):
 
     def updateAtribute(self, atribute, newValue):
         error = 0
+        if not newValue.isdigit() or newValue < 0: #¿Lo hace serviceManager?
+            self.error = -9 #Incorrect AtributeValue Error
         if atribute == 'samplingFrequency':
             self.samplingFrequency = newValue
         elif atribute == 'mode':
             self.mode = newValue
         else:
             error = -8 # error de atributo incorrecto
-            self.error = -8 #Incorrect Atribute Error code
-        return error #devolver self.error?
+            #self.error = -8 #Incorrect Atribute Error code
+        return error
 
     def getData(self):
-        data = -1 # Posible error
+        data = 0 # Posible error
         if self.mode == 0:
             try:
                 data = self.sumTemperature/self.sampleCounter
             except ZeroDivisionError:
-                self.error = -10 #ZeroDivisionError code
+                error = -10
+                #self.error = -10 #ZeroDivisionError code
         elif self.mode == 1:
             data = self.lastTemperature
         else:
-            data = -1
+            data = -9
+            #self.error = -9 #Incorrect AtributeValue Error
         self.sumTemperature = 0
         self.sampleCounter = 0
         return data
