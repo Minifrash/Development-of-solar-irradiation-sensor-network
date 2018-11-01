@@ -21,13 +21,14 @@ class TemperatureOutSensor(object):
         self.temp = 0
         self.lock = 0
 
-    def confService(self, atributes, lock):
+    def confService(self, atributes):
         self.powerPin = Pin('P8', mode=Pin.OUT)
         self.powerPin(1)
         self.ow = OneWire(Pin('P4'))
         self.temp = DS18X20(self.ow) # DS18X20 must be powered on on instantiation (rom scan)
         self.powerPin(0)
-        self.lock = lock
+        self.lock = atributes['lock']
+        print(self.lock)
         self.samplingFrequency = atributes['samplingFrecuency']
         self.mode = atributes['mode']
 
@@ -78,9 +79,9 @@ class TemperatureOutSensor(object):
     def disconnect(self):
         self.enabled = False
 
-    def connect(self, atributes, lock):
+    def connect(self, atributes):
         self.enabled = True
-        self.confService(atributes, lock)
+        self.confService(atributes)
         self.start()
 
     def serviceEnabled(self):

@@ -2,7 +2,7 @@ import sys
 import _thread
 import time
 import gc
-from libraries.dht import DHT
+#from libraries.dht import DHT
 
 class HumiditySensor(object):
 
@@ -15,20 +15,20 @@ class HumiditySensor(object):
         self.sampleCounter = 0
         self.enabled = False
         self.sampleThread = 0
-        self.humidity = 0#DHT('P3',1)
+        self.humidity = 0
         self.dht = 0
         self.lock = 0
 
-    def confService(self, atributes, dht, lock): # posible error de no contener todos los atributes esperados
-        self.humidity = DHT('P3',1)
-        self.lock = lock
-        self.dht = dht
+    def confService(self, atributes): # posible error de no contener todos los atributes esperados
+        #self.humidity = DHT('P3',1)
+        self.lock = atributes['lock']
+        print(self.lock)
+        self.dht = atributes['dht']
         self.samplingFrequency = atributes['samplingFrecuency']
         self.mode = atributes['mode']
 
     def start(self):
         self.dht.connect(self.serviceID, self.samplingFrequency, self.lock)
-        #self.dht.start()
 
     def updateAtribute(self, atribute, newValue):
         error = False
@@ -44,9 +44,9 @@ class HumiditySensor(object):
         data = self.dht.getHumidity(self.mode)
         return data
 
-    def connect(self, atributes, dht, lock):
+    def connect(self, atributes):
         self.enabled = True
-        self.confService(atributes, dht, lock)
+        self.confService(atributes)
         self.start()
 
     def disconnect(self):

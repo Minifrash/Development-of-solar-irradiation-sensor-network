@@ -1,7 +1,7 @@
 import sys
 import _thread
 import time
-from machine import ADC
+#from machine import ADC
 
 class IrradiationSensor(object):
 
@@ -18,11 +18,12 @@ class IrradiationSensor(object):
         self.panel = 0
         self.lock = 0
 
-    def confService(self, atributes, lock):
+    def confService(self, atributes):
         self.adc = ADC()
         self.adc.vref(1058)
         self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
-        self.lock = lock
+        self.lock = atributes['lock']
+        print(self.lock)
         self.samplingFrequency = atributes['samplingFrecuency']
         self.mode = atributes['mode']
 
@@ -70,9 +71,9 @@ class IrradiationSensor(object):
     def disconnect(self):
         self.enabled = False
 
-    def connect(self, atributes, lock):
+    def connect(self, atributes):
         self.enabled = True
-        self.confService(atributes, lock)
+        self.confService(atributes)
         self.start()
 
     def serviceEnabled(self):

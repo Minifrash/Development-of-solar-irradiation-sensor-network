@@ -3,7 +3,7 @@ import _thread
 import time
 import gc
 from libraries.dht import DHT
-#import random
+import random
 
 class DHT22(object):
 
@@ -102,6 +102,7 @@ class DHT22(object):
         if self.enabled is False:
             self.enabled = True
             self.lock = lock
+            print(self.lock)
             self.conf(samplingFrequency)
             self.start()
         return error

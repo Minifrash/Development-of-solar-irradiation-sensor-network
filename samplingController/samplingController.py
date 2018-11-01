@@ -18,12 +18,12 @@ class SamplingController(object):
         self.samplingFrequency = atributes['samplingFrecuency'] # ¿Haria falta?
         self.sleepTime = atributes['sleepTime']
         self.wakeTime = atributes['wakeTime']
+        self.sensorsList = atributes['sensorsList']
 
     def setServicesList(self, sensorsList):
         self.sensorsList = sensorsList
 
-    def start(self, sensorsList):
-        self.sensorsList = sensorsList
+    #def start(self, sensorsList):
         # Crear el thread para la funcion sendData()
 
     def updateAtribute(self, atribute, newValue):
@@ -60,9 +60,9 @@ class SamplingController(object):
         print('Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
         print('-----------------------------')
 
-    def connect(self, atributes, sensorsList):
+    def connect(self, atributes):
         self.confService(atributes)
-        self.start(sensorsList)
+        #self.start(sensorsList)
 
     ''' Funciones pendientes
     def sleep(self):

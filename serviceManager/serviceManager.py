@@ -29,9 +29,10 @@ class ServiceManager(object):
         self.serviceID = 0
         self.servicesList =  dict()
         self.sensorsList = dict()
+        self.NoSensorsServicesList = dict()
         self.lock = 0
         self.samplingController = SamplingController()
-        self.locationSensor = LocationSensor()
+        #self.locationSensor = LocationSensor()
         self.irradiationSensor = IrradiationSensor()
         self.temperatureInSensor = TemperatureInSensor()
         self.humiditySensor = HumiditySensor()
@@ -46,45 +47,52 @@ class ServiceManager(object):
         self.confService()
         self.wakeAllSensorsServices()
         self.wakeAllServices()
-        #self.samplingController.start(self.sensorsList)
         self.samplingController.sendData()
 
-    def wakeAllServices(self): # Add locationService
+    def wakeAllServices(self):
         for serviceID, value in self.servicesList.items():
-            if serviceID == 1 and value.get('serviceEnabled') == 1:
-                atributes = self.getAtributesConf(serviceID)
-                self.samplingController.connect(atributes, self.sensorsList)
+            self.wakeServices(serviceID, value)
 
-    def wakeAllSensorsServices(self):  # REPASAR
+    def wakeServices(self, serviceID, value):
+        if serviceID == 1 and value.get('serviceEnabled') == 1:
+            atributes = self.getAtributesConf(serviceID)
+            atributes.setdefault('sensorsList', self.sensorsList)
+            self.NoSensorsServicesList.setdefault(serviceID, self.samplingController)
+            self.samplingController.connect(atributes)
+
+    def wakeAllSensorsServices(self):
         error = 0
         for serviceID, value in self.servicesList.items():
             self.wakeSensorsServices(serviceID, value)
         return error
 
     def wakeSensorsServices(self, serviceID, value):
-        #if serviceID == 1 and value.get('serviceEnabled') == 1:
-            #atributes = self.getAtributesConf(serviceID)
-            #self.samplingController.confService(atributes)
-        if serviceID == 2 and value.get('serviceEnabled') == 1:
-            atributes = self.getAtributesConf(serviceID)
-            self.sensorsList.setdefault(serviceID, self.locationSensor)
-            self.locationSensor.connect(atributes, self.lock)
+        #if serviceID == 2 and value.get('serviceEnabled') == 1:
+        #    atributes = self.getAtributesConf(serviceID)
+        #    self.sensorsList.setdefault(serviceID, self.locationSensor)
+        #    self.locationSensor.connect(atributes, self.lock)
         if serviceID == 3 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
+            atributes.setdefault('lock', self.lock)
             self.sensorsList.setdefault(serviceID, self.irradiationSensor)
-            self.irradiationSensor.connect(atributes, self.lock)
+            self.irradiationSensor.connect(atributes)
         if serviceID == 4 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
+            atributes.setdefault('lock', self.lock)
+            atributes.setdefault('dht', self.dht)
             self.sensorsList.setdefault(serviceID, self.temperatureInSensor)
-            self.temperatureInSensor.connect(atributes, self.dht, self.lock)
+            self.temperatureInSensor.connect(atributes)
         if serviceID == 5 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
+            atributes.setdefault('lock', self.lock)
+            atributes.setdefault('dht', self.dht)
             self.sensorsList.setdefault(serviceID, self.humiditySensor)
-            self.humiditySensor.connect(atributes, self.dht, self.lock)
+            self.humiditySensor.connect(atributes)
         if serviceID == 6 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
+            atributes.setdefault('lock', self.lock)
             self.sensorsList.setdefault(serviceID, self.temperatureOutSensor)
-            self.temperatureOutSensor.connect(atributes, self.lock)
+            self.temperatureOutSensor.connect(atributes)
 
     def addServicesList(self, serviceID, path, serviceEnabled):
         newService = {'path': path, 'serviceEnabled':serviceEnabled}
@@ -140,8 +148,8 @@ class ServiceManager(object):
         atributes[atribute] = value
         self.writeFileConf(fileName, atributes)
         # Llamar al metodo del servicio correspondiente para que actualice su parametro
-        if serviceID == 1:
-            self.samplingController.updateAtribute(atribute, value)
+        if self.servicesList[serviceID].get('serviceSensor') != 1:
+            self.NoSensorsServicesList[serviceID].updateAtribute(atribute, value)
         elif self.servicesList[serviceID].get('serviceSensor') == 1 and self.servicesList[serviceID].get('serviceEnabled') == 1:
             self.sensorsList[serviceID].updateAtribute(atribute, value)
         else: # Si se solicita a un servicio que no sean los sensores o el samplingController
@@ -158,6 +166,8 @@ class ServiceManager(object):
                  atributes = self.getAtributesConf(serviceID)
                  if self.servicesList[serviceID].get('serviceSensor') == 1:
                      self.wakeSensorsServices(serviceID, self.servicesList.setdefault(serviceID))
+                 elif self.servicesList[serviceID].get('serviceSensor') != 1:
+                     self.wakeServices(serviceID, self.servicesList.setdefault(serviceID))
                  else:
                     error = -1
             else:
@@ -176,6 +186,9 @@ class ServiceManager(object):
                  if self.servicesList[serviceID].get('serviceSensor') == 1:
                      self.sensorsList[serviceID].disconnect()
                      self.sensorsList.pop(serviceID)
+                 elif self.servicesList[serviceID].get('serviceSensor') != 1:
+                    #self.NoSensorsServicesList[serviceID].disconnect()
+                    self.NoSensorsServicesList.pop(serviceID)
              else:
                  error = -1
         else:
@@ -190,6 +203,7 @@ class ServiceManager(object):
 def main():
     sm = ServiceManager()
     #sm.confService()
+    #sm.startService(1)
     #sm.startService(3)
     #sm.startService(4)
     #sm.startService(5)
@@ -199,6 +213,7 @@ def main():
     #sm.stopService(4)
     #sm.stopService(5)
     #sm.stopService(6)
+    #sm.stopService(1)
 
 
 main()
