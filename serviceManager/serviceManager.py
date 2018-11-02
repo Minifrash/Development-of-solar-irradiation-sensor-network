@@ -19,7 +19,7 @@ from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
 from temperatureInSensor.temperatureInSensor import TemperatureInSensor
 from humiditySensor.humiditySensor import HumiditySensor
 from irradiationSensor.irradiationSensor import IrradiationSensor
-from locationSensor.locationSensor import LocationSensor
+#from locationSensor.locationSensor import LocationSensor
 from dht22.dht22 import DHT22
 
 

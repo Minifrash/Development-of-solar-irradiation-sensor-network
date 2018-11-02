@@ -3,7 +3,7 @@ import _thread
 import time
 import gc
 from libraries.dht import DHT
-import random
+#import random
 
 class DHT22(object):
 

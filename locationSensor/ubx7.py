@@ -239,7 +239,7 @@ class ubx7msg:
 This class includes methods to communicate with the ubox receiver
 '''
 class ubx7:
-    def __init__(self, uart, baudrate=9600, bits=8, parity=None, stop=1, pins=('G24', 'G11')):
+    def __init__(self, uart, baudrate=9600, bits=8, parity=None, stop=1, pins=('P22', 'P23')):
         self.uart = uart
         self.uart.init(baudrate, bits, parity, stop, pins=pins)
         self.buffsize = 1024
@@ -261,25 +261,19 @@ class ubx7:
         return None
 
     def sendrecv(self, msg_classid, msg_payload=b''):
-        bytesWrites = self.send(msg_classid, msg_payload)
-        print(bytesWrites)
-        bytesRead = self.uart.read(bytesWrites)
-        print(bytesRead)
-        bytes = self.uart.write('hello')
-        print(bytes)
-        print(self.uart.read(bytes))
-        #return self.recv()
+        self.send(msg_classid, msg_payload)
+        return self.recv()
 
     def recv(self):
         response = self.readallwhenany()
-        print("r1")
+        #print("r1")
         while ubx7msg.HEADER not in response:
             if len(response) > self.buffsize:
                 del response
                 raise NameError('Missing header in response')
             response += self.readallwhenany()
         response = response[response.find(ubx7msg.HEADER):]
-        print("r1")
+        #print("r2")
         while len(response) < ubx7msg.minmsgsize:
             if len(response) > self.buffsize:
                 del response
@@ -287,16 +281,16 @@ class ubx7:
             response += self.readallwhenany()
 
         reslen = unpack('<H', response[4:6])[0] + ubx7msg.minmsgsize
-        print("r1")
+        #print("r3")
         if self.command.WANTSACK:
             reslen = reslen + ACK.LENGTH # We expect an ack (+ response)
-        print("r1")
+        #print("r4")
         while len(response) < reslen:
             if len(response) > self.buffsize:
                 del response
                 raise NameError('Timeout :(')
             response += self.readallwhenany()
-        print("r1")
+        #print("r5")
         response = response[:reslen]
 
         if len(response.split(ubx7msg.HEADER)) > 2:
@@ -307,20 +301,18 @@ class ubx7:
         elif self.command.WANTSACK:
             self.ack.setfromraw(response[:ACK.LENGTH])
             if self.ack.isvalid():
-                return self.ack,
+                return self.ack
         else:
             self.response.setfromraw(response)
             if self.response.isvalid():
-                return self.response,
+                return self.response
 
         raise NameError('Invalid results')
 
     def send(self, msg_classid, msg_payload=b''):
         self.clearall()
         self.command.set(msg_classid, msg_payload)
-        bytesRead = self.uart.readall()
-        print(bytesRead)
-        #self.command.printmsg()
+        self.uart.readall()
         return self.uart.write(self.command.rawmsg())
 
     def clearall(self):
@@ -335,7 +327,7 @@ class ubx7:
         while not self.uart.any():
             #print(self.uart.any())
             pass
-        print("paso")
+        #print("paso")
         return self.uart.readall()
 
 def string2bytes(*args):

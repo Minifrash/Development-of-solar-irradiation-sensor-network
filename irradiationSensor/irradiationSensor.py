@@ -1,7 +1,7 @@
 import sys
 import _thread
 import time
-#from machine import ADC
+from machine import ADC
 
 class IrradiationSensor(object):
 
