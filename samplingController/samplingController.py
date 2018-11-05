@@ -43,21 +43,21 @@ class SamplingController(object):
         return error
 
     def sendData(self): # Modificar para enviar datos a mensajeriaSensor
-        self.ram()
+        #self.ram()
         for i in range(5):
             time.sleep(self.sendingFrequency)
             print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
             for sensor, valor in self.sensorsList.items():
                 print(str(sensor) + " : " + str(valor.getData()))
-                self.ram()
+        #        self.ram()
         for thread in self.sensorsList.values():
             thread.disconnect()
-        self.ram()
+        #self.ram()
 
     def ram(self):
         gc.collect()
         print('-----------------------------')
-        print('Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
+        #print('Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
         print('-----------------------------')
 
     def connect(self, atributes):

@@ -2,7 +2,7 @@ import sys
 import _thread
 import time
 import gc
-from libraries.dht import DHT
+#from libraries.dht import DHT
 #import random
 
 class DHT22(object):
@@ -24,7 +24,7 @@ class DHT22(object):
 
     def conf(self, samplingFrequency):
         self.samplingFrequency = samplingFrequency
-        self.dht =  DHT('P3',1)
+        #self.dht =  DHT('P3',1)
 
     def start(self):
         if self.sampleThread == 0:
@@ -33,19 +33,19 @@ class DHT22(object):
     def sampling(self, delay, id):
         while True:
             if self.enabled == True:
-                result = self.dht.read()
+                #result = self.dht.read()
                 self.lock.acquire()
                 #result = self.dht.read()
                 if self.enabledHumidity is True:
                     #print("H")
                     #print(result.humidity)
-                    self.lastHumidity = result.humidity/1.0
+                    self.lastHumidity = 2#result.humidity/1.0
                     self.sumHumidity += self.lastHumidity
                     self.sampleCounterHumidity += 1
                 if self.enabledTemperature is True:
                     #print("T")
                     #print(result.temperature)
-                    self.lastTemperature = result.temperature/1.0
+                    self.lastTemperature = 3#result.temperature/1.0
                     self.sumTemperature += self.lastTemperature
                     self.sampleCounterTemperature += 1
                 gc.collect()

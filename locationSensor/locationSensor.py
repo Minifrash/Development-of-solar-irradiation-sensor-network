@@ -29,11 +29,6 @@ class LocationSensor(object):
         self.res = ubx7msg() # responses to be received from the ubx device
         self.ack = ubx7msg() #   ack (or nak) to be received from the ubx device
 
-    def start(self):
-        # Crear el thread para la funcion sendData()
-        self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,2))
-
-    '''def sincro(self):'''
 
     def updateAtribute(self, atribute, newValue):
         error = False
@@ -89,14 +84,22 @@ class LocationSensor(object):
             data = -1
         return data
 
+    def printval(self, val, name, units='', scaling=1):
+        print('{}: {} {}'.format(name, val*scaling, units))
+
+''' Papelera
     def disconnect(self):
         try:
             self.sampleThread = _thread.exit()
         except SystemExit:
             error = -1 #-1 es un ejemplo, dependerá de política de errores
 
-    def printval(self, val, name, units='', scaling=1):
-        print('{}: {} {}'.format(name, val*scaling, units))
+    def start(self):
+        # Crear el thread para la funcion sendData()
+        self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,2))
+
+    def sincro(self):
+'''
 
 def main():
     location = LocationSensor()

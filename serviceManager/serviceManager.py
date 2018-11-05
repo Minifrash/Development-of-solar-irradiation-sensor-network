@@ -1,26 +1,26 @@
 import sys
 import _thread
-#sys.path.append('./samplingController')
-#sys.path.append('./temperatureOutSensor')
-#sys.path.append('./temperatureInSensor')
-#sys.path.append('./humiditySensor')
-#sys.path.append('./irradiationSensor')
-#sys.path.append('./dht22')
+sys.path.append('./samplingController')
+sys.path.append('./temperatureOutSensor')
+sys.path.append('./temperatureInSensor')
+sys.path.append('./humiditySensor')
+sys.path.append('./irradiationSensor')
+sys.path.append('./dht22')
 
-#from samplingController import SamplingController
-#from temperatureOutSensor import TemperatureOutSensor
-#from temperatureInSensor import TemperatureInSensor
-#from humiditySensor import HumiditySensor
-#from irradiationSensor import IrradiationSensor
-#from dht22 import DHT22
+from samplingController import SamplingController
+from temperatureOutSensor import TemperatureOutSensor
+from temperatureInSensor import TemperatureInSensor
+from humiditySensor import HumiditySensor
+from irradiationSensor import IrradiationSensor
+from dht22 import DHT22
 
-from samplingController.samplingController import SamplingController
-from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
-from temperatureInSensor.temperatureInSensor import TemperatureInSensor
-from humiditySensor.humiditySensor import HumiditySensor
-from irradiationSensor.irradiationSensor import IrradiationSensor
+#from samplingController.samplingController import SamplingController
+#from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
+#from temperatureInSensor.temperatureInSensor import TemperatureInSensor
+#from humiditySensor.humiditySensor import HumiditySensor
+#from irradiationSensor.irradiationSensor import IrradiationSensor
 #from locationSensor.locationSensor import LocationSensor
-from dht22.dht22 import DHT22
+#from dht22.dht22 import DHT22
 
 
 class ServiceManager(object):
@@ -31,12 +31,12 @@ class ServiceManager(object):
         self.sensorsList = dict()
         self.NoSensorsServicesList = dict()
         self.lock = 0
-        self.samplingController = SamplingController()
+        #self.samplingController = 0#SamplingController()
         #self.locationSensor = LocationSensor()
-        self.irradiationSensor = IrradiationSensor()
-        self.temperatureInSensor = TemperatureInSensor()
-        self.humiditySensor = HumiditySensor()
-        self.temperatureOutSensor = TemperatureOutSensor()
+        #self.irradiationSensor = 0#IrradiationSensor()
+        #self.temperatureInSensor = 0#TemperatureInSensor()
+        #self.humiditySensor = 0#HumiditySensor()
+        #self.temperatureOutSensor = 0#TemperatureOutSensor()
         self.dht = DHT22()
 
     def confService(self):
@@ -47,7 +47,7 @@ class ServiceManager(object):
         self.confService()
         self.wakeAllSensorsServices()
         self.wakeAllServices()
-        self.samplingController.sendData()
+        self.NoSensorsServicesList.setdefault(1).sendData()
 
     def wakeAllServices(self):
         for serviceID, value in self.servicesList.items():
@@ -57,8 +57,9 @@ class ServiceManager(object):
         if serviceID == 1 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('sensorsList', self.sensorsList)
-            self.NoSensorsServicesList.setdefault(serviceID, self.samplingController)
-            self.samplingController.connect(atributes)
+            self.NoSensorsServicesList.setdefault(serviceID, SamplingController())
+            self.NoSensorsServicesList.setdefault(serviceID).connect(atributes)
+            #self.samplingController.connect(atributes)
 
     def wakeAllSensorsServices(self):
         error = 0
@@ -74,25 +75,25 @@ class ServiceManager(object):
         if serviceID == 3 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('lock', self.lock)
-            self.sensorsList.setdefault(serviceID, self.irradiationSensor)
-            self.irradiationSensor.connect(atributes)
+            self.sensorsList.setdefault(serviceID, IrradiationSensor())
+            self.sensorsList.setdefault(serviceID).connect(atributes)
         if serviceID == 4 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('lock', self.lock)
             atributes.setdefault('dht', self.dht)
-            self.sensorsList.setdefault(serviceID, self.temperatureInSensor)
-            self.temperatureInSensor.connect(atributes)
+            self.sensorsList.setdefault(serviceID, TemperatureInSensor())
+            self.sensorsList.setdefault(serviceID).connect(atributes)
         if serviceID == 5 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('lock', self.lock)
             atributes.setdefault('dht', self.dht)
-            self.sensorsList.setdefault(serviceID, self.humiditySensor)
-            self.humiditySensor.connect(atributes)
+            self.sensorsList.setdefault(serviceID, HumiditySensor())
+            self.sensorsList.setdefault(serviceID).connect(atributes)
         if serviceID == 6 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('lock', self.lock)
-            self.sensorsList.setdefault(serviceID, self.temperatureOutSensor)
-            self.temperatureOutSensor.connect(atributes)
+            self.sensorsList.setdefault(serviceID, TemperatureOutSensor())
+            self.sensorsList.setdefault(serviceID).connect(atributes)
 
     def addServicesList(self, serviceID, path, serviceEnabled):
         newService = {'path': path, 'serviceEnabled':serviceEnabled}
@@ -166,6 +167,7 @@ class ServiceManager(object):
                  atributes = self.getAtributesConf(serviceID)
                  if self.servicesList[serviceID].get('serviceSensor') == 1:
                      self.wakeSensorsServices(serviceID, self.servicesList.setdefault(serviceID))
+                     self.NoSensorsServicesList.setdefault(1).setServicesList(self.sensorsList) #NUEVOOOOOO
                  elif self.servicesList[serviceID].get('serviceSensor') != 1:
                      self.wakeServices(serviceID, self.servicesList.setdefault(serviceID))
                  else:
@@ -186,6 +188,7 @@ class ServiceManager(object):
                  if self.servicesList[serviceID].get('serviceSensor') == 1:
                      self.sensorsList[serviceID].disconnect()
                      self.sensorsList.pop(serviceID)
+                     self.NoSensorsServicesList.setdefault(1).setServicesList(self.sensorsList) #NUEVOOOOOO
                  elif self.servicesList[serviceID].get('serviceSensor') != 1:
                     #self.NoSensorsServicesList[serviceID].disconnect()
                     self.NoSensorsServicesList.pop(serviceID)
