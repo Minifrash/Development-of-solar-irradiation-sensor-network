@@ -31,9 +31,8 @@ class DHT22(object):
     def start(self):
         error = 0
         if self.sampleThread == 0:
-            self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,5))
             try:
-                self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,6))
+                self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,5))
             except:
                 error = -3 #CreateThread Error code
                 #self.error = -3
@@ -120,11 +119,12 @@ class DHT22(object):
         elif serviceID == 5 and self.enabledHumidity is False:
             self.enabledHumidity = True
         else:
-            error = -1 #Fallo en el serviceID o ya esta conectado
+            error = -6 #Fallo en el serviceID o ya esta conectado #Active Service Error
 
         if self.enabled is False:
             self.enabled = True
             self.lock = lock
+            print(self.lock)
             self.conf(samplingFrequency)
             self.start()
         return error
@@ -135,7 +135,7 @@ class DHT22(object):
         elif serviceID == 5 and self.enabledHumidity == True:
             self.enabledHumidity = False
         else:
-            error = -1 #Fallo en el serviceID o ya esta conectado
+            error = -7 #Fallo en el serviceID o ya esta conectado #Non-Active Service Error
 
         if self.enabledTemperature == False and self.enabledHumidity == False:
             self.sampleThread = 0

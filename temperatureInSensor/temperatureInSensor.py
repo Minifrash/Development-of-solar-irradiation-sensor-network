@@ -1,7 +1,7 @@
 import sys
 import _thread
 import time
-from libraries.dht import DHT
+#from libraries.dht import DHT
 
 class TemperatureInSensor(object):
 
@@ -14,15 +14,16 @@ class TemperatureInSensor(object):
         self.sampleCounter = 0
         self.enabled = False
         self.sampleThread = 0
-        self.temp = 0#DHT('P3',1)
+        self.temp = 0
         self.dht = 0
         self.lock = 0
         self.error = 0
 
     def confService(self, atributes):
-        self.temp = DHT('P3',1)
-        self.lock = lock
-        self.dht = dht
+        #self.temp = DHT('P3',1)
+        self.lock = atributes['lock']
+        print(self.lock)
+        self.dht = atributes['dht']
         self.samplingFrequency = atributes['samplingFrecuency']
         if not self.samplingFrequency.isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
             self.error = -9 #Incorrect AtributeValue Error
@@ -32,6 +33,7 @@ class TemperatureInSensor(object):
 
     def start(self):
         self.dht.connect(self.serviceID, self.samplingFrequency, self.lock)
+        #self.dht.start()
 
     def updateAtribute(self, atribute, newValue):
         error = 0
@@ -49,14 +51,14 @@ class TemperatureInSensor(object):
         data = self.dht.getTemperature(self.mode)
         return data
 
+    def connect(self, atributes):
+        self.enabled = True
+        self.confService(atributes)
+        self.start()
+
     def disconnect(self):
         self.enabled = False
         self.dht.disconnect(self.serviceID)
-
-    def connect(self, atributes):
-        self.enabled = True
-        self.confService(atributes, dht, lock)
-        self.start()
 
     def serviceEnabled(self):
         return self.enabled

@@ -16,9 +16,10 @@ class TemperatureOutSensor(object):
         self.sampleCounter = 0
         self.enabled = False
         self.sampleThread = 0
-        self.powerPin = 0 #Pin('P8', mode=Pin.OUT)
-        self.ow = 0 #OneWire(Pin('P4'))
-        self.temp = 0 #DS18X20(self.ow) # DS18X20 must be powered on on instantiation (rom scan)
+        self.powerPin = 0
+        self.ow = 0
+        self.temp = 0
+        self.lock = 0
         self.error = 0 #Codigo de error o cero si todo bien
         self.erCounter = 3 #Contador para reintentos tras error
 
@@ -28,6 +29,8 @@ class TemperatureOutSensor(object):
         self.ow = OneWire(Pin('P4'))
         self.temp = DS18X20(self.ow) # DS18X20 must be powered on on instantiation (rom scan)
         self.powerPin(0)
+        self.lock = atributes['lock']
+        print(self.lock)
         self.samplingFrequency = atributes['samplingFrecuency']
         if not self.samplingFrequency.isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
             self.error = -9 #Incorrect AtributeValue Error
@@ -47,21 +50,25 @@ class TemperatureOutSensor(object):
     def sampling(self, delay, id):
         while True:
             if self.enabled is True:
+                self.lock.acquire()
                 self.powerPin(1)
                 self.temp.start_convertion()
                 time.sleep(delay)
                 self.lastTemperature = self.temp.read_temp_async()
                 count = 0
+                #Valores para sensor DS18X20
                 while((self.lastTemperature < (-55.0) or self.lastTemperature > 125.0) and count < self.erCounter):
                     self.lastTemperature = self.temp.read_temp_async()
                     count += 1
-                count = 0
+                #count = 0
                 if (self.lastTemperature < (-55.0) or self.lastTemperature > 125.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
                     self.error = -11 #Incorrect Value Error code
                 else:
                     self.sumTemperature += self.lastTemperature
                     self.sampleCounter += 1
                 self.powerPin(0)
+                self.lock.release()
+
             else:
                 try:
                     _thread.exit()
@@ -83,6 +90,7 @@ class TemperatureOutSensor(object):
 
     def getData(self):
         data = 0 # Posible error
+        self.lock.acquire()
         if self.mode == 0:
             try:
                 data = self.sumTemperature/self.sampleCounter
@@ -96,6 +104,7 @@ class TemperatureOutSensor(object):
             #self.error = -9 #Incorrect AtributeValue Error
         self.sumTemperature = 0
         self.sampleCounter = 0
+        self.lock.release()
         return data
 
     def disconnect(self):
