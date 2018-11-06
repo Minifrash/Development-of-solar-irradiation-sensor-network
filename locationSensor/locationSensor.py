@@ -1,7 +1,9 @@
 import sys
 import _thread
 import time
-from machine import UART
+import utime as time
+
+from machine import UART, RTC
 from struct import unpack
 from locationSensor.ubx7 import *
 
@@ -84,6 +86,21 @@ class LocationSensor(object):
             data = -1
         return data
 
+    def getData2(self):
+        data = -1 # Posible error
+        if self.mode == 0:
+            print("OK")
+            self.res = self.ubx.sendrecv(NAV.PVT)
+            print("OK2")
+            data = self.res.unpackpl('u4u2u1u1u1u1u1x1u4i4u1x1u1u1i4i4i4i4u4u4i4i4i4i4i4u4u4u2x2u4')
+            rtc = RTC()
+            #rtc.init((2014, 5, 1, 4, 13, 0, 0, 0))
+            rtc.init((data[4],data[6],data[7],data[8],data[9],data[10]))
+            print(rtc.now())
+            time.sleep(5)
+            print(rtc.now())
+
+
     def printval(self, val, name, units='', scaling=1):
         print('{}: {} {}'.format(name, val*scaling, units))
 
@@ -93,18 +110,16 @@ class LocationSensor(object):
             self.sampleThread = _thread.exit()
         except SystemExit:
             error = -1 #-1 es un ejemplo, dependerá de política de errores
-
     def start(self):
         # Crear el thread para la funcion sendData()
         self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,2))
-
     def sincro(self):
 '''
 
 def main():
     location = LocationSensor()
     location.confService(0)
-    location.getData()
+    location.getData2()
 
 
 main()

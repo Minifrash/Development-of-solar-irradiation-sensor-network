@@ -1,26 +1,27 @@
 import sys
 import _thread
-sys.path.append('./samplingController')
-sys.path.append('./temperatureOutSensor')
-sys.path.append('./temperatureInSensor')
-sys.path.append('./humiditySensor')
-sys.path.append('./irradiationSensor')
-sys.path.append('./dht22')
+import gc
+#sys.path.append('./samplingController')
+#sys.path.append('./temperatureOutSensor')
+#sys.path.append('./temperatureInSensor')
+#sys.path.append('./humiditySensor')
+#sys.path.append('./irradiationSensor')
+#sys.path.append('./dht22')
 
-from samplingController import SamplingController
-from temperatureOutSensor import TemperatureOutSensor
-from temperatureInSensor import TemperatureInSensor
-from humiditySensor import HumiditySensor
-from irradiationSensor import IrradiationSensor
-from dht22 import DHT22
+#from samplingController import SamplingController
+#from temperatureOutSensor import TemperatureOutSensor
+#from temperatureInSensor import TemperatureInSensor
+#from humiditySensor import HumiditySensor
+#from irradiationSensor import IrradiationSensor
+#from dht22 import DHT22
 
-#from samplingController.samplingController import SamplingController
-#from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
-#from temperatureInSensor.temperatureInSensor import TemperatureInSensor
-#from humiditySensor.humiditySensor import HumiditySensor
-#from irradiationSensor.irradiationSensor import IrradiationSensor
+from samplingController.samplingController import SamplingController
+from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
+from temperatureInSensor.temperatureInSensor import TemperatureInSensor
+from humiditySensor.humiditySensor import HumiditySensor
+from irradiationSensor.irradiationSensor import IrradiationSensor
 #from locationSensor.locationSensor import LocationSensor
-#from dht22.dht22 import DHT22
+from dht22.dht22 import DHT22
 
 
 class ServiceManager(object):
@@ -31,12 +32,13 @@ class ServiceManager(object):
         self.sensorsList = dict()
         self.NoSensorsServicesList = dict()
         self.lock = 0
-        #self.samplingController = 0#SamplingController()
+        self.error = 0
+        #self.samplingController = SamplingController()
         #self.locationSensor = LocationSensor()
-        #self.irradiationSensor = 0#IrradiationSensor()
-        #self.temperatureInSensor = 0#TemperatureInSensor()
-        #self.humiditySensor = 0#HumiditySensor()
-        #self.temperatureOutSensor = 0#TemperatureOutSensor()
+        #self.irradiationSensor = IrradiationSensor()
+        #self.temperatureInSensor = TemperatureInSensor()
+        #self.humiditySensor = HumiditySensor()
+        #self.temperatureOutSensor = TemperatureOutSensor()
         self.dht = DHT22()
 
     def confService(self):
@@ -112,24 +114,27 @@ class ServiceManager(object):
         return self.servicesList
 
     def readFileConf(self, fileName):
-        #try
-        f = open(fileName, "r")
-        dic = eval(f.read())
-        f.close()
-        #except IOError:
-        error = -1 #-1 es un ejemplo, dependerá de la política de errores
+        dic = 0
+        try:
+            f = open(fileName, "r")
+            dic = eval(f.read())
+            f.close()
+        except IOError:
+            dic = -1
+            #self.error = -1 #IOError code
         return dic
 
     # REPASAR ¿Como se refleja un posible error?
     def writeFileConf(self, fileName, data):
         error = 0
-        #try:
-        f = open(fileName, "w")
-        f.write(str(data))
-        f.close()
-        #except IOError:
-        error = -1 #-1 es un ejemplo, dependeráos.uname() de la política de errores
-        return error
+        try:
+            f = open(fileName, "w")
+            f.write(str(data))
+            f.close()
+        except IOError:
+            error = -1
+            #self.error = -1 #IOError code
+        return error #delvolver self.error?
 
     def getAtributesConf(self, serviceID):
         fileName = self.servicesList[serviceID].get('path')
@@ -171,11 +176,14 @@ class ServiceManager(object):
                  elif self.servicesList[serviceID].get('serviceSensor') != 1:
                      self.wakeServices(serviceID, self.servicesList.setdefault(serviceID))
                  else:
-                    error = -1
+                    error = -9 #Incorrect AtributeValue Error
+                    self.error = -9
             else:
-                 error = -1
+                 error = -6
+                 self.error = -6 #Active Service Error code
         else:
-            error = -1
+            error = -5
+            self.error = -5 #NoService Error code
         return error
 
     def stopService(self, serviceID):
@@ -193,9 +201,11 @@ class ServiceManager(object):
                     #self.NoSensorsServicesList[serviceID].disconnect()
                     self.NoSensorsServicesList.pop(serviceID)
              else:
-                 error = -1
+                 error = -7
+                 self.error = -7 #Non-Active Service Error
         else:
-            error = -1
+            error = -5
+            self.error = -5 #NoService Error code
         return error
 
     def restartService(self, serviceID): # REVISAR
@@ -204,6 +214,7 @@ class ServiceManager(object):
 
 
 def main():
+    gc.collect()
     sm = ServiceManager()
     #sm.confService()
     #sm.startService(1)

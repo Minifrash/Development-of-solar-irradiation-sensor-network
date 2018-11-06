@@ -23,9 +23,6 @@ class SamplingController(object):
     def setServicesList(self, sensorsList):
         self.sensorsList = sensorsList
 
-    #def start(self, sensorsList):
-        # Crear el thread para la funcion sendData()
-
     def updateAtribute(self, atribute, newValue):
         error = False
         if atribute == 'servicesList':
@@ -70,4 +67,7 @@ class SamplingController(object):
     def wakeUp(self):
 
     def disconnect(self):
+
+    def start(self, sensorsList):
+        # Crear el thread para la funcion sendData()
     '''
