@@ -1,9 +1,9 @@
 import sys
 import _thread
 import time
-#from machine import Pin
-#from libraries.onewire import DS18X20
-#from libraries.onewire import OneWire
+from machine import Pin
+from libraries.onewire import DS18X20
+from libraries.onewire import OneWire
 
 class TemperatureOutSensor(object):
 
@@ -54,7 +54,7 @@ class TemperatureOutSensor(object):
                 self.powerPin(1)
                 self.temp.start_convertion()
                 time.sleep(delay)
-                self.lastTemperature = self.temp.read_temp_async()
+                self.lastTemperature = 5#self.temp.read_temp_async()
                 count = 0
                 #Valores para sensor DS18X20
                 while((self.lastTemperature < (-55.0) or self.lastTemperature > 125.0) and count < self.erCounter):

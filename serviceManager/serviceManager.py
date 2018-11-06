@@ -33,12 +33,6 @@ class ServiceManager(object):
         self.NoSensorsServicesList = dict()
         self.lock = 0
         self.error = 0
-        #self.samplingController = SamplingController()
-        #self.locationSensor = LocationSensor()
-        #self.irradiationSensor = IrradiationSensor()
-        #self.temperatureInSensor = TemperatureInSensor()
-        #self.humiditySensor = HumiditySensor()
-        #self.temperatureOutSensor = TemperatureOutSensor()
         self.dht = DHT22()
 
     def confService(self):
@@ -172,7 +166,7 @@ class ServiceManager(object):
                  atributes = self.getAtributesConf(serviceID)
                  if self.servicesList[serviceID].get('serviceSensor') == 1:
                      self.wakeSensorsServices(serviceID, self.servicesList.setdefault(serviceID))
-                     self.NoSensorsServicesList.setdefault(1).setServicesList(self.sensorsList) #NUEVOOOOOO
+                     self.NoSensorsServicesList.setdefault(1).setServicesList(self.sensorsList)
                  elif self.servicesList[serviceID].get('serviceSensor') != 1:
                      self.wakeServices(serviceID, self.servicesList.setdefault(serviceID))
                  else:
@@ -196,7 +190,7 @@ class ServiceManager(object):
                  if self.servicesList[serviceID].get('serviceSensor') == 1:
                      self.sensorsList[serviceID].disconnect()
                      self.sensorsList.pop(serviceID)
-                     self.NoSensorsServicesList.setdefault(1).setServicesList(self.sensorsList) #NUEVOOOOOO
+                     self.NoSensorsServicesList.setdefault(1).setServicesList(self.sensorsList)
                  elif self.servicesList[serviceID].get('serviceSensor') != 1:
                     #self.NoSensorsServicesList[serviceID].disconnect()
                     self.NoSensorsServicesList.pop(serviceID)

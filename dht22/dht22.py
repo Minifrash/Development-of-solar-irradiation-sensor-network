@@ -3,7 +3,7 @@ import _thread
 import time
 import gc
 from libraries.dht import DHT
-#import random
+
 
 class DHT22(object):
 
@@ -42,9 +42,9 @@ class DHT22(object):
     def sampling(self, delay, id):
         while True:
             if self.enabled == True:
-                result = self.dht.read()
-                self.lock.acquire()
                 #result = self.dht.read()
+                self.lock.acquire()
+                result = self.dht.read()
                 if self.enabledHumidity is True:
                     #print("H")
                     #print(result.humidity)
