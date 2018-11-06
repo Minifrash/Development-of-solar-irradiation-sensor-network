@@ -32,10 +32,10 @@ class TemperatureOutSensor(object):
         self.lock = atributes['lock']
         print(self.lock)
         self.samplingFrequency = atributes['samplingFrecuency']
-        if not self.samplingFrequency.isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
+        if not str(self.samplingFrequency).isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
             self.error = -9 #Incorrect AtributeValue Error
         self.mode = atributes['mode']
-        if not self.mode.isdigit() or self.mode < 0: #Comprobar si es un numero (isdigit) y si es negativo
+        if not str(self.mode).isdigit() or self.mode < 0: #Comprobar si es un numero (isdigit) y si es negativo
             self.error = -9 #Incorrect AtributeValue Error
 
     def start(self):
@@ -58,7 +58,7 @@ class TemperatureOutSensor(object):
                 count = 0
                 #Valores para sensor DS18X20
                 while((self.lastTemperature < (-55.0) or self.lastTemperature > 125.0) and count < self.erCounter):
-                    self.lastTemperature = self.temp.read_temp_async()
+                    self.lastTemperature = 7#self.temp.read_temp_async()
                     count += 1
                 #count = 0
                 if (self.lastTemperature < (-55.0) or self.lastTemperature > 125.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
@@ -70,14 +70,14 @@ class TemperatureOutSensor(object):
                 self.lock.release()
 
             else:
-                try:
-                    _thread.exit()
-                except SystemExit:
-                    self.error = -4 #SystemExit code
+                #try:
+                _thread.exit()
+                #except:
+                    #self.error = -4 #SystemExit code
 
     def updateAtribute(self, atribute, newValue):
         error = 0
-        if not newValue.isdigit() or newValue < 0: #¿Lo hace serviceManager?
+        if not str(newValue).isdigit() or newValue < 0: #¿Lo hace serviceManager?
             self.error = -9 #Incorrect AtributeValue Error
         if atribute == 'samplingFrequency':
             self.samplingFrequency = newValue

@@ -61,10 +61,10 @@ class DHT22(object):
                 self.lock.release()
                 time.sleep(delay)
             else:
-                try:
-                    _thread.exit()
-                except SystemExit:
-                    self.error = -4 #SystemExit code
+                #try:
+                _thread.exit()
+                #except:
+                    #self.error = -4 #SystemExit code
 
 
     def getHumidity(self, mode):
