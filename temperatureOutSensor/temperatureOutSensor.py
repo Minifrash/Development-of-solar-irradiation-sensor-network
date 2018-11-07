@@ -54,13 +54,12 @@ class TemperatureOutSensor(object):
                 self.powerPin(1)
                 self.temp.start_convertion()
                 time.sleep(delay)
-                self.lastTemperature = 5#self.temp.read_temp_async()
+                self.lastTemperature = self.temp.read_temp_async()
                 count = 0
                 #Valores para sensor DS18X20
                 while((self.lastTemperature < (-55.0) or self.lastTemperature > 125.0) and count < self.erCounter):
-                    self.lastTemperature = 7#self.temp.read_temp_async()
+                    self.lastTemperature = self.temp.read_temp_async()
                     count += 1
-                #count = 0
                 if (self.lastTemperature < (-55.0) or self.lastTemperature > 125.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
                     self.error = -11 #Incorrect Value Error code
                 else:
@@ -70,10 +69,7 @@ class TemperatureOutSensor(object):
                 self.lock.release()
 
             else:
-                #try:
                 _thread.exit()
-                #except:
-                    #self.error = -4 #SystemExit code
 
     def updateAtribute(self, atribute, newValue):
         error = 0

@@ -95,7 +95,7 @@ class LocationSensor(object):
             data = self.res.unpackpl('u4u2u1u1u1u1u1x1u4i4u1x1u1u1i4i4i4i4u4u4i4i4i4i4i4u4u4u2x2u4')
             rtc = RTC()
             #rtc.init((2014, 5, 1, 4, 13, 0, 0, 0))
-            rtc.init((data[4],data[6],data[7],data[8],data[9],data[10]))
+            rtc.init((data[4],data[6],data[7],data[8],data[9],data[10])) #year, month, day, hour, min, sec
             print(rtc.now())
             time.sleep(5)
             print(rtc.now())

@@ -2,6 +2,7 @@ import sys
 import _thread
 import time
 import gc
+from machine import Pin
 from libraries.dht import DHT
 
 
@@ -18,6 +19,7 @@ class DHT22(object):
         self.sampleCounterTemperature = 0
         self.samplingFrequency = 1
         self.sampleThread = 0
+        self.powerPin = 0
         self.dht = 0
         self.lock = 0
         self.enabled = False
@@ -25,6 +27,7 @@ class DHT22(object):
         self.erCounter = 3 #Contador para reintentos tras error
 
     def conf(self, samplingFrequency):
+        self.powerPin = Pin('P8', mode=Pin.OUT)
         self.samplingFrequency = samplingFrequency
         self.dht = DHT('P3',1)
 
@@ -42,29 +45,41 @@ class DHT22(object):
     def sampling(self, delay, id):
         while True:
             if self.enabled == True:
-                #result = self.dht.read()
                 self.lock.acquire()
+                self.powerPin(1)
+                time.sleep(delay)
                 result = self.dht.read()
                 if self.enabledHumidity is True:
+                    count = 0
+                    while((result.humidity < 0.0 or result.humidity > 100.0) and count < self.erCounter):
+                        time.sleep(0.375)
+                        result = self.dht.read()
+                        count += 1
+                    if (result.humidity < 0.0 or result.humidity > 100.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
+                        self.error = -11 #Incorrect Value Error code
                     #print("H")
                     #print(result.humidity)
-                    self.lastHumidity = result.humidity/1.0
+                    self.lastHumidity = result.humidity
                     self.sumHumidity += self.lastHumidity
                     self.sampleCounterHumidity += 1
                 if self.enabledTemperature is True:
+                    count = 0
+                    while((result.temperature < (-40.0) or result.temperature > 125.0) and count < self.erCounter):
+                        time.sleep(0.375)
+                        result = self.dht.read()
+                        count += 1
+                    if (result.temperature < (-40.0) or result.temperature > 125.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
+                        self.error = -11 #Incorrect Value Error code
                     #print("T")
                     #print(result.temperature)
-                    self.lastTemperature = result.temperature/1.0
+                    self.lastTemperature = result.temperature
                     self.sumTemperature += self.lastTemperature
                     self.sampleCounterTemperature += 1
                 gc.collect()
+                self.powerPin(0)
                 self.lock.release()
-                time.sleep(delay)
             else:
-                #try:
                 _thread.exit()
-                #except:
-                    #self.error = -4 #SystemExit code
 
 
     def getHumidity(self, mode):

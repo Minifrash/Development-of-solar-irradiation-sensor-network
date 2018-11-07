@@ -1,6 +1,7 @@
 import sys
 import _thread
 import time
+from machine import Pin
 from machine import ADC
 
 class IrradiationSensor(object):
@@ -14,6 +15,7 @@ class IrradiationSensor(object):
         self.sampleCounter = 0
         self.enabled = False
         self.sampleThread = 0
+        self.powerPin = 0
         self.adc = 0
         self.panel = 0
         self.lock = 0
@@ -21,6 +23,7 @@ class IrradiationSensor(object):
         self.erCounter = 3
 
     def confService(self, atributes):
+        self.powerPin = Pin('P8', mode=Pin.OUT)
         self.adc = ADC()
         self.adc.vref(1058)
         self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
@@ -47,25 +50,23 @@ class IrradiationSensor(object):
         while True:
             if self.enabled is True:
                 self.lock.acquire()
+                self.powerPin(1)
+                time.sleep(delay)
                 self.lastRadiation = self.panel.voltage()
                 count = 0
                 #El valor para el panel es aproximado pues se considera que devuelve 1000 en un día soleado de 25º
                 while((self.lastRadiation < 1.0 or self.lastRadiation > 1200.0) and count < self.erCounter):
                     self.lastRadiation = self.panel.voltage()
                     count += 1
-                #count = 0
                 if (self.lastRadiation < 1.0 or self.lastRadiation > 1200.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
                     self.error = -11 #Incorrect Value Error code
                 else:
                     self.sumRadiation += self.lastRadiation
                     self.sampleCounter += 1
+                self.powerPin(0)
                 self.lock.release()
-                time.sleep(delay)
             else:
-                #try:
                 _thread.exit()
-                #except:
-                    #self.error = -4 #SystemExit code
 
     def updateAtribute(self, atribute, newValue):
         error = 0
