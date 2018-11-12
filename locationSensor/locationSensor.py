@@ -11,26 +11,27 @@ class LocationSensor(object):
 
     def __init__(self):
         self.serviceID = 2
+        self.enabled = False
         self.mode = 0
         self.latitude = 0
         self.altitude = 0
         self.longitude = 0
-        self.enabled = 0 # ¿Haria falta?
-        self.sampleThread = 0 #_thread.start_new_thread(self.sampling, (self.samplingFrequency, 1))#0 # ¿Como inicializar?
         self.uart = 0
         self.ubx = 0
         self.cmd = 0
         self.res = 0
         self.ack = 0
 
-    def confService(self, atributos):
-        self.mode = 0#atributos['mode']
+    def confService(self, atributes):
+        self.mode = atributos['mode']
         self.uart = UART(1)
         self.ubx = ubx7(self.uart) # UBX7 device declaration
         self.cmd = ubx7msg() # commands to be sent to the ubx device
         self.res = ubx7msg() # responses to be received from the ubx device
         self.ack = ubx7msg() #   ack (or nak) to be received from the ubx device
 
+    def start(self): # Tener un timeout o una manera de comprobar si hay un error y inizializar el rtc de otra forma y dar una posicion fija
+        self.sincroGPS()
 
     def updateAtribute(self, atribute, newValue):
         error = False
@@ -40,7 +41,38 @@ class LocationSensor(object):
             error = True # error de atributo incorrecto
         return error
 
-    def getData(self):
+    def sincroGPS(self):
+        data = -1 # Posible error
+        if self.mode == 0:
+            self.res = self.ubx.sendrecv(NAV.PVT)
+            data = self.res.unpackpl('u4u2u1u1u1u1u1x1u4i4u1x1u1u1i4i4i4i4u4u4i4i4i4i4i4u4u4u2x2u4')
+            rtc = RTC()
+            rtc.init((data[4],data[6],data[7],data[8],data[9],data[10])) #year, month, day, hour, min, sec
+            print(rtc.now())
+            time.sleep(5)
+            print(rtc.now())
+            self.longitude = data[24]
+            self.latitude = data[28]
+            self.altitude = data[32]
+
+    def getLocation(self):
+        return self.longitude, self.latitude, self.altitude
+
+    def printval(self, val, name, units='', scaling=1):
+        print('{}: {} {}'.format(name, val*scaling, units))
+
+    def connect(self, atributes):
+        self.enabled = True
+        self.confService(atributes)
+        self.start()
+
+    def disconnect(self):
+        self.enabled = False
+
+
+''' Papelera
+
+    def demoGetData(self):
         data = -1 # Posible error
         if self.mode == 0:
             print("OK")
@@ -85,41 +117,13 @@ class LocationSensor(object):
         else:
             data = -1
         return data
-
-    def getData2(self):
-        data = -1 # Posible error
-        if self.mode == 0:
-            print("OK")
-            self.res = self.ubx.sendrecv(NAV.PVT)
-            print("OK2")
-            data = self.res.unpackpl('u4u2u1u1u1u1u1x1u4i4u1x1u1u1i4i4i4i4u4u4i4i4i4i4i4u4u4u2x2u4')
-            rtc = RTC()
-            #rtc.init((2014, 5, 1, 4, 13, 0, 0, 0))
-            rtc.init((data[4],data[6],data[7],data[8],data[9],data[10])) #year, month, day, hour, min, sec
-            print(rtc.now())
-            time.sleep(5)
-            print(rtc.now())
-
-
-    def printval(self, val, name, units='', scaling=1):
-        print('{}: {} {}'.format(name, val*scaling, units))
-
-''' Papelera
-    def disconnect(self):
-        try:
-            self.sampleThread = _thread.exit()
-        except SystemExit:
-            error = -1 #-1 es un ejemplo, dependerá de política de errores
-    def start(self):
-        # Crear el thread para la funcion sendData()
-        self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,2))
-    def sincro(self):
 '''
 
 def main():
     location = LocationSensor()
-    location.confService(0)
-    location.getData2()
+    atributes = dict()
+    atributes.setdefault('mode', 0)
+    location.connect(atributes)
 
 
 main()
