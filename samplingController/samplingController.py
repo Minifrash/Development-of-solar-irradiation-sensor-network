@@ -1,24 +1,35 @@
 import time
 import gc
+from machine import RTC
 
 class SamplingController(object):
 
     def __init__(self):
         self.serviceID = 1
+        self.enabled = False
         self.sensorsList = dict()
         self.sendingFrequency = 0
-        self.samplingFrequency = 0 # ¿Haria falta?
         self.sleepTime = 0
         self.wakeTime = 0
-        self.sampleThread = 0
+        self.rtc = 0
 
     #Tratar posibles errores
     def confService(self, atributes):
         self.sendingFrequency = atributes['sendingFrequency']
-        self.samplingFrequency = atributes['samplingFrecuency'] # ¿Haria falta?
         self.sleepTime = atributes['sleepTime']
         self.wakeTime = atributes['wakeTime']
         self.sensorsList = atributes['sensorsList']
+
+    def start(self):
+        if 2 in self.sensorsList:
+            coordinates = self.sensorsList.setdefault(2).getLocation
+            self.rtc = RTC()
+            # Enviar mensaje con la posicion y la hora
+        else:
+            error = -1 # GPS no esta activado
+            self.rtc = RTC() # ¿Como inicializar RTC?
+
+        self.sendData()
 
     def setServicesList(self, sensorsList):
         self.sensorsList = sensorsList
@@ -29,8 +40,6 @@ class SamplingController(object):
             self.servicesList = newValue
         elif atribute == 'sendingFrequency':
             self.sendingFrequency = newValue
-        elif atribute == 'samplingFrequency': # ¿Haria falta?
-            self.sendingFrequency = newValue # ¿Haria falta?
         elif atribute == 'sleepTime':
             self.sleepTime = newValue
         elif atribute == 'wakeTime':
@@ -58,16 +67,15 @@ class SamplingController(object):
         print('-----------------------------')
 
     def connect(self, atributes):
+        self.enabled = False
         self.confService(atributes)
-        #self.start(sensorsList)
+        self.start()
+
+    def disconnect(self):
+        self.enabled = False
 
     ''' Funciones pendientes
     def sleep(self):
 
     def wakeUp(self):
-
-    def disconnect(self):
-
-    def start(self, sensorsList):
-        # Crear el thread para la funcion sendData()
     '''

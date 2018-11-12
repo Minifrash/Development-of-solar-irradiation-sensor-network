@@ -6,12 +6,12 @@ class TemperatureInSensor(object):
 
     def __init__(self):
         self.serviceID = 4
+        self.enabled = False
         self.samplingFrequency = 0
         self.mode = 0
         self.lastTemperature = 0
         self.sumTemperature = 0
         self.sampleCounter = 0
-        self.enabled = False
         self.sampleThread = 0
         self.temp = 0
         self.dht = 0

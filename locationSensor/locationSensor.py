@@ -21,6 +21,7 @@ class LocationSensor(object):
         self.cmd = 0
         self.res = 0
         self.ack = 0
+        self.rtc = 0
 
     def confService(self, atributes):
         self.mode = atributos['mode']
@@ -46,8 +47,8 @@ class LocationSensor(object):
         if self.mode == 0:
             self.res = self.ubx.sendrecv(NAV.PVT)
             data = self.res.unpackpl('u4u2u1u1u1u1u1x1u4i4u1x1u1u1i4i4i4i4u4u4i4i4i4i4i4u4u4u2x2u4')
-            rtc = RTC()
-            rtc.init((data[4],data[6],data[7],data[8],data[9],data[10])) #year, month, day, hour, min, sec
+            self.rtc = RTC()
+            self.rtc.init((data[4],data[6],data[7],data[8],data[9],data[10])) #year, month, day, hour, min, sec
             print(rtc.now())
             time.sleep(5)
             print(rtc.now())
