@@ -24,11 +24,14 @@ class SamplingController(object):
         if 2 in self.sensorsList:
             coordinates = self.sensorsList.setdefault(2).getLocation
             self.rtc = RTC()
+            print(rtc.now())
+            print("Longitude: " + coordinates[0])
+            print("Latitude: " + coordinates[1])
+            print("Altitude: " + coordinates[2])
             # Enviar mensaje con la posicion y la hora
         else:
             error = -1 # GPS no esta activado
             self.rtc = RTC() # ¿Como inicializar RTC?
-
         self.sendData()
 
     def setServicesList(self, sensorsList):
@@ -54,8 +57,9 @@ class SamplingController(object):
             time.sleep(self.sendingFrequency)
             print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
             for sensor, valor in self.sensorsList.items():
-                print(str(sensor) + " : " + str(valor.getData()))
-                self.ram()
+                if sensor != 2:
+                    print(str(sensor) + " : " + str(valor.getData()))
+                    self.ram()
         for thread in self.sensorsList.values():
             thread.disconnect()
         self.ram()

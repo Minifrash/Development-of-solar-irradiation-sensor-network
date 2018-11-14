@@ -20,7 +20,7 @@ from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
 from temperatureInSensor.temperatureInSensor import TemperatureInSensor
 from humiditySensor.humiditySensor import HumiditySensor
 from irradiationSensor.irradiationSensor import IrradiationSensor
-#from locationSensor.locationSensor import LocationSensor
+from locationSensor.locationSensor import LocationSensor
 from dht22.dht22 import DHT22
 
 
@@ -64,10 +64,11 @@ class ServiceManager(object):
         return error
 
     def wakeSensorsServices(self, serviceID, value):
-        #if serviceID == 2 and value.get('serviceEnabled') == 1:
-        #    atributes = self.getAtributesConf(serviceID)
-        #    self.sensorsList.setdefault(serviceID, self.locationSensor)
-        #    self.locationSensor.connect(atributes, self.lock)
+        if serviceID == 2 and value.get('serviceEnabled') == 1:
+            atributes = self.getAtributesConf(serviceID)
+            self.sensorsList.setdefault(serviceID, self.locationSensor)
+            self.sensorsList.setdefault(serviceID).connect(atributes)
+            #self.locationSensor.connect(atributes, self.lock)
         if serviceID == 3 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('lock', self.lock)
