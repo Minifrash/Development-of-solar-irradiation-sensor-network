@@ -35,19 +35,20 @@ class DHT22(object):
         error = 0
         if self.sampleThread == 0:
             try:
-                self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,5))
+                self.sampleThread = _thread.start_new_thread(self.sampling, ())
             except:
                 error = -3 #CreateThread Error code
                 #self.error = -3
         #else error hilo ya iniciado?
         return error
 
-    def sampling(self, delay, id):
+    def sampling(self):
         while True:
             if self.enabled == True:
+		time.sleep(self.samplingFrequency)
                 self.lock.acquire()
                 self.powerPin(1)
-                time.sleep(delay)
+		time.sleep(0.8)
                 result = self.dht.read()
                 if self.enabledHumidity is True:
                     count = 0
@@ -86,6 +87,7 @@ class DHT22(object):
         data = -1 # Posible error
         self.lock.acquire()
         if self.enabledHumidity is True:
+	    #print("Mode 5:" + str(mode))
             if mode == 0:
                 try:
                     data = self.sumHumidity/self.sampleCounterHumidity

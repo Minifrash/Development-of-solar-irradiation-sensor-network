@@ -1,24 +1,11 @@
 import sys
 import _thread
 import gc
-#sys.path.append('./samplingController')
-#sys.path.append('./temperatureOutSensor')
-#sys.path.append('./temperatureInSensor')
-#sys.path.append('./humiditySensor')
-#sys.path.append('./irradiationSensor')
-#sys.path.append('./dht22')
-
-#from samplingController import SamplingController
-#from temperatureOutSensor import TemperatureOutSensor
-#from temperatureInSensor import TemperatureInSensor
-#from humiditySensor import HumiditySensor
-#from irradiationSensor import IrradiationSensor
-#from dht22 import DHT22
 
 from samplingController.samplingController import SamplingController
 from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
 from temperatureInSensor.temperatureInSensor import TemperatureInSensor
-from humiditySensor.humiditySensor import HumiditySensor
+from humiditySensor2.humiditySensor import HumiditySensor
 from irradiationSensor.irradiationSensor import IrradiationSensor
 from locationSensor.locationSensor import LocationSensor
 from dht22.dht22 import DHT22
@@ -66,9 +53,8 @@ class ServiceManager(object):
     def wakeSensorsServices(self, serviceID, value):
         if serviceID == 2 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
-            self.sensorsList.setdefault(serviceID, self.locationSensor)
+            self.sensorsList.setdefault(serviceID, LocationSensor())
             self.sensorsList.setdefault(serviceID).connect(atributes)
-            #self.locationSensor.connect(atributes, self.lock)
         if serviceID == 3 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('lock', self.lock)
@@ -208,21 +194,3 @@ class ServiceManager(object):
         self.startService(serviceID)
 
 
-def main():
-    gc.collect()
-    sm = ServiceManager()
-    #sm.confService()
-    #sm.startService(1)
-    #sm.startService(3)
-    #sm.startService(4)
-    #sm.startService(5)
-    #sm.startService(6)
-    sm.start()
-    #sm.stopService(3)
-    #sm.stopService(4)
-    #sm.stopService(5)
-    #sm.stopService(6)
-    #sm.stopService(1)
-
-
-main()

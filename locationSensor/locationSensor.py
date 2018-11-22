@@ -14,7 +14,7 @@ class LocationSensor(object):
         self.enabled = False
         self.mode = 0
         self.latitude = 0
-        self.altitude = 0
+        self.height = 0
         self.longitude = 0
         self.uart = 0
         self.ubx = 0
@@ -24,7 +24,7 @@ class LocationSensor(object):
         self.rtc = 0
 
     def confService(self, atributes):
-        self.mode = atributos['mode']
+        self.mode = atributes['mode']
         self.uart = UART(1)
         self.ubx = ubx7(self.uart) # UBX7 device declaration
         self.cmd = ubx7msg() # commands to be sent to the ubx device
@@ -49,15 +49,17 @@ class LocationSensor(object):
             data = self.res.unpackpl('u4u2u1u1u1u1u1x1u4i4u1x1u1u1i4i4i4i4u4u4i4i4i4i4i4u4u4u2x2u4')
             self.rtc = RTC()
             self.rtc.init((data[4],data[6],data[7],data[8],data[9],data[10])) #year, month, day, hour, min, sec
-            print(rtc.now())
-            time.sleep(5)
-            print(rtc.now())
+            #print(self.rtc.now())
             self.longitude = data[24]
             self.latitude = data[28]
-            self.altitude = data[32]
+            self.height = data[32]
 
     def getLocation(self):
-        return self.longitude, self.latitude, self.altitude
+	#coordinates = dict()
+	#coordinates.setdefault('longitude', self.longitude)
+	#coordinates.setdefault('latitude', self.latitude)
+	#coordinates.setdefault('height', self.height)
+        return self.longitude, self.latitude, self.height
 
     def printval(self, val, name, units='', scaling=1):
         print('{}: {} {}'.format(name, val*scaling, units))
@@ -127,4 +129,4 @@ def main():
     location.connect(atributes)
 
 
-main()
+#main()

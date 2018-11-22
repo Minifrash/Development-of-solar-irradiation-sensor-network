@@ -22,7 +22,7 @@ class TemperatureInSensor(object):
         self.lock = atributes['lock']
         print(self.lock)
         self.dht = atributes['dht']
-        self.samplingFrequency = atributes['samplingFrecuency']
+        self.samplingFrequency = atributes['samplingFrequency']
         if not str(self.samplingFrequency).isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
             self.error = -9 #Incorrect AtributeValue Error
         self.mode = atributes['mode']

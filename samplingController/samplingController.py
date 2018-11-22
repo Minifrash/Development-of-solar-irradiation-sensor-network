@@ -22,12 +22,12 @@ class SamplingController(object):
 
     def start(self):
         if 2 in self.sensorsList:
-            coordinates = self.sensorsList.setdefault(2).getLocation
+            coordinates = self.sensorsList.setdefault(2).getLocation()
             self.rtc = RTC()
-            print(rtc.now())
-            print("Longitude: " + coordinates[0])
-            print("Latitude: " + coordinates[1])
-            print("Altitude: " + coordinates[2])
+            print(self.rtc.now())
+            print("Longitude: " + str(coordinates[0]))
+            print("Latitude: " + str(coordinates[1]))
+            print("Height: " + str(coordinates[2]))
             # Enviar mensaje con la posicion y la hora
         else:
             error = -1 # GPS no esta activado
@@ -53,16 +53,18 @@ class SamplingController(object):
 
     def sendData(self): # Modificar para enviar datos a mensajeriaSensor
         self.ram()
-        for i in range(5):
+ 	i = 0
+        while True:
             time.sleep(self.sendingFrequency)
             print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
             for sensor, valor in self.sensorsList.items():
                 if sensor != 2:
                     print(str(sensor) + " : " + str(valor.getData()))
                     self.ram()
-        for thread in self.sensorsList.values():
-            thread.disconnect()
-        self.ram()
+	    i += 1
+        #for thread in self.sensorsList.values():
+            #thread.disconnect()
+        #self.ram()
 
     def ram(self):
         gc.collect()
