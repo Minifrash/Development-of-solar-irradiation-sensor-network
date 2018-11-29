@@ -11,13 +11,13 @@ class ConnectionService(object):
     def __init__(self):
         self.conexion = 0
         self.rtc = 0
-	self.euiGateway = 0
-	self.keyGateway = 0
+	    self.euiGateway = 0
+	    self.keyGateway = 0
 
     def confService(self, atributes):
         self.rtc = RTC()
-	self.euiGateway = atributes['euiGateway']
-	self.keyGateway = atributes['keyGateway']
+	    self.euiGateway = atributes['euiGateway']
+	    self.keyGateway = atributes['keyGateway']
         # Initialise LoRa in LORAWAN mode. Europe = LoRa.EU868
     	lora = LoRa(mode=LoRa.LORAWAN, region=LoRa.EU868)
     	# create an OTAA authentication parameters
@@ -43,10 +43,13 @@ class ConnectionService(object):
         #Desconectar conexion LoRa
 
     def sendPackage(self, typePackage, data):
-        if typePackage == 1: # Mensaje de muestras
-            self.samplePackage(data)
-        if typePackage == 2: # Mensaje de muestras
-            self.informationPackage(data)
+        if typePackage == 'sample': # Mensaje de muestras
+            dataSend = self.samplePackage(data)
+        if typePackage == 'sincroGPS': # Mensaje de muestras
+            dataSend = self.sincroGPSPackage(data)
+        if typePackage == 'noSincroGPS': # Mensaje de muestras
+            dataSend = self.noSincroGPSPackage(data)
+        self.send(dataSend)
 
     def send(self, dataSend):
     	# make the socket blocking
@@ -67,7 +70,8 @@ class ConnectionService(object):
     	dataSend += str(self.rtc.now()[4]) # Minuto
     	dataSend += ' '
     	dataSend += str(self.rtc.now()[5]) # Segundo
-	dataSend += ' '
+	    dataSend += ' '
+        dataSend += '0' # Type of package 0 = sample
 
         if 3 in data:
             dataSend += str(1)
@@ -108,10 +112,33 @@ class ConnectionService(object):
             dataSend += ' '
         if 6 in data:
             dataSend += str(data.get(6))
+        #self.send(dataSend)
 
-        self.send(dataSend)
 
-
-    def informationPackage(self, data):
+    def sincroGPSPackage(self, data):
         dataSend = ''
-        self.send(dataSend)
+    	dataSend += str(self.rtc.now()[3]) # Hora
+    	dataSend += ' '
+    	dataSend += str(self.rtc.now()[4]) # Minuto
+    	dataSend += ' '
+    	dataSend += str(self.rtc.now()[5]) # Segundo
+	    dataSend += ' '
+        dataSend += '1' # Type of package 1 = sincroGPS
+        dataSend += str(data.get(0))
+        dataSend += ' '
+        dataSend += str(data.get(1))
+        dataSend += ' '
+        dataSend += str(data.get(2))
+        #self.send(dataSend)
+
+
+    def noSincroGPSPackage(self, data):
+        dataSend = ''
+    	dataSend += str(self.rtc.now()[3]) # Hora
+    	dataSend += ' '
+    	dataSend += str(self.rtc.now()[4]) # Minuto
+    	dataSend += ' '
+    	dataSend += str(self.rtc.now()[5]) # Segundo
+	    dataSend += ' '
+        dataSend += '2' # Type of package 1 = noSincroGPS
+        #self.send(dataSend)
