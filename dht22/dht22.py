@@ -45,7 +45,7 @@ class DHT22(object):
     def sampling(self):
         while True:
             if self.enabled == True:
-                time.sleep(self.samplingFrequency)
+                time.sleep(self.samplingFrequency-0.8) #time.sleep(self.samplingFrequency)
                 self.lock.acquire()
                 self.powerPin(1)
                 time.sleep(0.8)

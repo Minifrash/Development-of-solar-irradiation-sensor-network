@@ -51,10 +51,10 @@ class TemperatureOutSensor(object):
     def sampling(self):
         while True:
             if self.enabled is True:
-		time.sleep(self.samplingFrequency)
+                time.sleep(self.samplingFrequency-0.751)#time.sleep(self.samplingFrequency)
                 self.lock.acquire()
                 self.powerPin(1)
-		time.sleep(0.001)
+                time.sleep(0.001)
                 self.temp.start_convertion()
                 time.sleep(0.75)
                 self.lastTemperature = self.temp.read_temp_async()
@@ -68,7 +68,7 @@ class TemperatureOutSensor(object):
                 else:
                     self.sumTemperature += self.lastTemperature
                     self.sampleCounter += 1
-		gc.collect()
+                gc.collect()
                 self.powerPin(0)
                 self.lock.release()
 
