@@ -57,6 +57,7 @@ class IrradiationSensor(object):
                 self.powerPin(1)
 		time.sleep(0.002)
                 self.lastRadiation = self.panel.voltage()
+		#print("Last:" + str(self.lastRadiation))
                 count = 0
                 #El valor para el panel es aproximado pues se considera que devuelve 1000 en un día soleado de 25º
                 while((self.lastRadiation < 1.0 or self.lastRadiation > 1200.0) and count < self.erCounter):

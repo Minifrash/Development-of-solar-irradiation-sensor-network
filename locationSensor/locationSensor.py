@@ -142,4 +142,3 @@ class LocationSensor(object):
             data = -1
         return data
 '''
-
