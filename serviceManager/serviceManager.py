@@ -1,19 +1,6 @@
 import sys
 import _thread
 import gc
-#sys.path.append('./samplingController')
-#sys.path.append('./temperatureOutSensor')
-#sys.path.append('./temperatureInSensor')
-#sys.path.append('./humiditySensor')
-#sys.path.append('./irradiationSensor')
-#sys.path.append('./dht22')
-
-#from samplingController import SamplingController
-#from temperatureOutSensor import TemperatureOutSensor
-#from temperatureInSensor import TemperatureInSensor
-#from humiditySensor import HumiditySensor
-#from irradiationSensor import IrradiationSensor
-#from dht22 import DHT22
 
 from samplingController.samplingController import SamplingController
 from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
@@ -22,6 +9,7 @@ from humiditySensor.humiditySensor import HumiditySensor
 from irradiationSensor.irradiationSensor import IrradiationSensor
 from locationSensor.locationSensor import LocationSensor
 from dht22.dht22 import DHT22
+from connectionService.connectionService import ConnectionService
 
 
 class ServiceManager(object):
@@ -34,6 +22,7 @@ class ServiceManager(object):
         self.lock = 0
         self.error = 0
         self.dht = DHT22()
+	#self.connectionService = ConnectionService()
 
     def confService(self):
         self.servicesList = self.readFileConf('./serviceManager/conf.txt')
@@ -41,9 +30,17 @@ class ServiceManager(object):
 
     def start(self):
         self.confService()
+	self.wakeConnectionService()
         self.wakeAllSensorsServices()
         self.wakeAllServices()
         self.NoSensorsServicesList.setdefault(1).sendData()
+
+    def wakeConnectionService(self):
+        for serviceID, value in self.servicesList.items():
+            if serviceID == 7 and value.get('serviceEnabled') == 1:
+                atributes = self.getAtributesConf(serviceID)
+                self.NoSensorsServicesList.setdefault(serviceID, ConnectionService())
+                self.NoSensorsServicesList.setdefault(serviceID).connect(atributes)
 
     def wakeAllServices(self):
         for serviceID, value in self.servicesList.items():
@@ -53,9 +50,9 @@ class ServiceManager(object):
         if serviceID == 1 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('sensorsList', self.sensorsList)
+            atributes.setdefault('connectionService', self.NoSensorsServicesList.setdefault(7)) # add instance ConnectionService()
             self.NoSensorsServicesList.setdefault(serviceID, SamplingController())
             self.NoSensorsServicesList.setdefault(serviceID).connect(atributes)
-            #self.samplingController.connect(atributes)
 
     def wakeAllSensorsServices(self):
         error = 0
@@ -66,9 +63,9 @@ class ServiceManager(object):
     def wakeSensorsServices(self, serviceID, value):
         if serviceID == 2 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
-            self.sensorsList.setdefault(serviceID, self.locationSensor)
+            atributes.setdefault('connectionService', self.NoSensorsServicesList.setdefault(7)) # add instance ConnectionService()
+            self.sensorsList.setdefault(serviceID, LocationSensor())
             self.sensorsList.setdefault(serviceID).connect(atributes)
-            #self.locationSensor.connect(atributes, self.lock)
         if serviceID == 3 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('lock', self.lock)
@@ -114,7 +111,7 @@ class ServiceManager(object):
             f = open(fileName, "r")
             dic = eval(f.read())
             f.close()
-        except IOError:
+        except OSError:
             dic = -1
             #self.error = -1 #IOError code
         return dic
@@ -126,7 +123,7 @@ class ServiceManager(object):
             f = open(fileName, "w")
             f.write(str(data))
             f.close()
-        except IOError:
+        except OSError:
             error = -1
             #self.error = -1 #IOError code
         return error #delvolver self.error?
@@ -207,22 +204,3 @@ class ServiceManager(object):
         self.stopService(serviceID)
         self.startService(serviceID)
 
-
-def main():
-    gc.collect()
-    sm = ServiceManager()
-    #sm.confService()
-    #sm.startService(1)
-    #sm.startService(3)
-    #sm.startService(4)
-    #sm.startService(5)
-    #sm.startService(6)
-    sm.start()
-    #sm.stopService(3)
-    #sm.stopService(4)
-    #sm.stopService(5)
-    #sm.stopService(6)
-    #sm.stopService(1)
-
-
-main()

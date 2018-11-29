@@ -2,6 +2,7 @@ import time
 import gc
 from machine import RTC
 
+
 class SamplingController(object):
 
     def __init__(self):
@@ -12,9 +13,11 @@ class SamplingController(object):
         self.sleepTime = 0
         self.wakeTime = 0
         self.rtc = 0
+        self.conexion = 0
 
     #Tratar posibles errores
     def confService(self, atributes):
+        self.conexion = atributes['connectionService']
         self.sendingFrequency = atributes['sendingFrequency']
         self.sleepTime = atributes['sleepTime']
         self.wakeTime = atributes['wakeTime']
@@ -22,12 +25,12 @@ class SamplingController(object):
 
     def start(self):
         if 2 in self.sensorsList:
-            coordinates = self.sensorsList.setdefault(2).getLocation
+            coordinates = self.sensorsList.setdefault(2).getLocation()
             self.rtc = RTC()
-            print(rtc.now())
-            print("Longitude: " + coordinates[0])
-            print("Latitude: " + coordinates[1])
-            print("Altitude: " + coordinates[2])
+            print(self.rtc.now())
+            print("Longitude: " + str(coordinates[0]))
+            print("Latitude: " + str(coordinates[1]))
+            print("Height: " + str(coordinates[2]))
             # Enviar mensaje con la posicion y la hora
         else:
             error = -1 # GPS no esta activado
@@ -48,21 +51,28 @@ class SamplingController(object):
         elif atribute == 'wakeTime':
             self.wakeTime = newValue
         else:
-            error = True # error de atributo incorrecto
+            error = True # error de atributo incorrecto -8
         return error
 
     def sendData(self): # Modificar para enviar datos a mensajeriaSensor
         self.ram()
-        for i in range(5):
+     	i = 0
+    	dataSend = 0# dict()
+        while True:
+            data = dict()
             time.sleep(self.sendingFrequency)
             print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
             for sensor, valor in self.sensorsList.items():
-                if sensor != 2:
-                    print(str(sensor) + " : " + str(valor.getData()))
-                    self.ram()
-        for thread in self.sensorsList.values():
-            thread.disconnect()
-        self.ram()
+            	muestra = valor.getData()
+            	data.setdefault(sensor, muestra)
+            	dataSend = str(sensor) + " : " + str(muestra)
+                print(dataSend)
+            	self.ram()
+            self.conexion.sendPackage(1, data)
+            del data
+            self.ram()
+            i += 1
+
 
     def ram(self):
         gc.collect()
@@ -77,6 +87,7 @@ class SamplingController(object):
 
     def disconnect(self):
         self.enabled = False
+
 
     ''' Funciones pendientes
     def sleep(self):

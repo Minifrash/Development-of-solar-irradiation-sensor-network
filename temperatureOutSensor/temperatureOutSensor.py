@@ -1,6 +1,7 @@
 import sys
 import _thread
 import time
+import gc
 from machine import Pin
 from libraries.onewire import DS18X20
 from libraries.onewire import OneWire
@@ -30,8 +31,8 @@ class TemperatureOutSensor(object):
         self.temp = DS18X20(self.ow) # DS18X20 must be powered on on instantiation (rom scan)
         self.powerPin(0)
         self.lock = atributes['lock']
-        print(self.lock)
-        self.samplingFrequency = atributes['samplingFrecuency']
+        #print(self.lock)
+        self.samplingFrequency = atributes['samplingFrequency']
         if not str(self.samplingFrequency).isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
             self.error = -9 #Incorrect AtributeValue Error
         self.mode = atributes['mode']
@@ -41,19 +42,21 @@ class TemperatureOutSensor(object):
     def start(self):
         error = 0
         try:
-            self.sampleThread = _thread.start_new_thread(self.sampling, (self.samplingFrequency,6))
+            self.sampleThread = _thread.start_new_thread(self.sampling, ())
         except:
             error = -3 #CreateThread Error code
             #self.error = -3
         return error
 
-    def sampling(self, delay, id):
+    def sampling(self):
         while True:
             if self.enabled is True:
+		time.sleep(self.samplingFrequency)
                 self.lock.acquire()
                 self.powerPin(1)
+		time.sleep(0.001)
                 self.temp.start_convertion()
-                time.sleep(delay)
+                time.sleep(0.75)
                 self.lastTemperature = self.temp.read_temp_async()
                 count = 0
                 #Valores para sensor DS18X20
@@ -65,6 +68,7 @@ class TemperatureOutSensor(object):
                 else:
                     self.sumTemperature += self.lastTemperature
                     self.sampleCounter += 1
+		gc.collect()
                 self.powerPin(0)
                 self.lock.release()
 

@@ -5,7 +5,7 @@ import utime as time
 
 from machine import UART, RTC
 from struct import unpack
-from locationSensor.ubx7 import *
+from libraries.ubx7 import *
 
 class LocationSensor(object):
 
@@ -14,7 +14,7 @@ class LocationSensor(object):
         self.enabled = False
         self.mode = 0
         self.latitude = 0
-        self.altitude = 0
+        self.height = 0
         self.longitude = 0
         self.uart = 0
         self.ubx = 0
@@ -22,9 +22,13 @@ class LocationSensor(object):
         self.res = 0
         self.ack = 0
         self.rtc = 0
+	self.erCounter = 3
+	self.conexion = 0
+        self.sincro = False
 
     def confService(self, atributes):
-        self.mode = atributos['mode']
+        self.mode = atributes['mode']
+	self.conexion = atributes['connectionService']
         self.uart = UART(1)
         self.ubx = ubx7(self.uart) # UBX7 device declaration
         self.cmd = ubx7msg() # commands to be sent to the ubx device
@@ -32,7 +36,13 @@ class LocationSensor(object):
         self.ack = ubx7msg() #   ack (or nak) to be received from the ubx device
 
     def start(self): # Tener un timeout o una manera de comprobar si hay un error y inizializar el rtc de otra forma y dar una posicion fija
-        self.sincroGPS()
+        counter = 0
+        while(self.sincro != True and counter < self.erCounter):
+            try:
+                self.sincroGPS()
+            except:
+                print("Imposible conectar con GPS - Intento: " + str(counter))
+            counter+=1
 
     def updateAtribute(self, atribute, newValue):
         error = False
@@ -46,18 +56,31 @@ class LocationSensor(object):
         data = -1 # Posible error
         if self.mode == 0:
             self.res = self.ubx.sendrecv(NAV.PVT)
-            data = self.res.unpackpl('u4u2u1u1u1u1u1x1u4i4u1x1u1u1i4i4i4i4u4u4i4i4i4i4i4u4u4u2x2u4')
-            self.rtc = RTC()
-            self.rtc.init((data[4],data[6],data[7],data[8],data[9],data[10])) #year, month, day, hour, min, sec
-            print(rtc.now())
-            time.sleep(5)
-            print(rtc.now())
-            self.longitude = data[24]
-            self.latitude = data[28]
-            self.altitude = data[32]
+	    data = self.res.unpackpl('u4u2u1u1u1u1u1x1u4i4u1x1u1u1i4i4i4i4u4u4i4i4i4i4i4u4u4u2x2u4')
+	    self.rtc = RTC()
+	    self.rtc.init((data[4],data[6],data[7],data[8],data[9],data[10])) #year, month, day, hour, min, sec
+	    #print(self.rtc.now())
+	    self.longitude = data[24]
+	    self.latitude = data[28]
+	    self.height = data[32]
+            self.sincro = True
+
+    def getData(self):
+        if self.sincro != True:
+            try:
+                self.sincroGPS()
+                print("Conexion con GPS")
+                print(self.rtc.now()) # Envio de mensaje de conexion con el gps y la hora actual del RTC despues de conexion al Servidor
+            except:
+                print("Imposible conectar con GPS") # Registro del fallo al modulo de gestion de errores
+	return 0
 
     def getLocation(self):
-        return self.longitude, self.latitude, self.altitude
+    	#coordinates = dict()
+    	#coordinates.setdefault('longitude', self.longitude)
+    	#coordinates.setdefault('latitude', self.latitude)
+    	#coordinates.setdefault('height', self.height)
+        return self.longitude, self.latitude, self.height
 
     def printval(self, val, name, units='', scaling=1):
         print('{}: {} {}'.format(name, val*scaling, units))
@@ -120,11 +143,3 @@ class LocationSensor(object):
         return data
 '''
 
-def main():
-    location = LocationSensor()
-    atributes = dict()
-    atributes.setdefault('mode', 0)
-    location.connect(atributes)
-
-
-main()
