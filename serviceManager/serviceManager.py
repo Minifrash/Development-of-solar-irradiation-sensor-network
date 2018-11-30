@@ -5,7 +5,7 @@ import gc
 from samplingController.samplingController import SamplingController
 from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
 from temperatureInSensor.temperatureInSensor import TemperatureInSensor
-from humiditySensor2.humiditySensor import HumiditySensor
+from humiditySensor.humiditySensor import HumiditySensor
 from irradiationSensor.irradiationSensor import IrradiationSensor
 from locationSensor.locationSensor import LocationSensor
 from dht22.dht22 import DHT22
@@ -30,7 +30,7 @@ class ServiceManager(object):
 
     def start(self):
         self.confService()
-	    self.wakeConnectionService()
+	self.wakeConnectionService()
         self.wakeAllSensorsServices()
         self.wakeAllServices()
         self.NoSensorsServicesList.setdefault(1).sendData()

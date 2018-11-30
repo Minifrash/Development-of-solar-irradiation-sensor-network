@@ -9,15 +9,16 @@ import ubinascii
 class ConnectionService(object):
 
     def __init__(self):
+	self.serviceID = 7
         self.conexion = 0
         self.rtc = 0
-	    self.euiGateway = 0
-	    self.keyGateway = 0
+	self.euiGateway = 0
+	self.keyGateway = 0
 
     def confService(self, atributes):
         self.rtc = RTC()
-	    self.euiGateway = atributes['euiGateway']
-	    self.keyGateway = atributes['keyGateway']
+	self.euiGateway = atributes['euiGateway']
+	self.keyGateway = atributes['keyGateway']
         # Initialise LoRa in LORAWAN mode. Europe = LoRa.EU868
     	lora = LoRa(mode=LoRa.LORAWAN, region=LoRa.EU868)
     	# create an OTAA authentication parameters
@@ -43,6 +44,7 @@ class ConnectionService(object):
         #Desconectar conexion LoRa
 
     def sendPackage(self, typePackage, data):
+	dataSend = ''
         if typePackage == 'sample': # Mensaje de muestras
             dataSend = self.samplePackage(data)
         if typePackage == 'sincroGPS': # Mensaje de muestras
@@ -70,8 +72,9 @@ class ConnectionService(object):
     	dataSend += str(self.rtc.now()[4]) # Minuto
     	dataSend += ' '
     	dataSend += str(self.rtc.now()[5]) # Segundo
-	    dataSend += ' '
+	dataSend += ' '
         dataSend += '0' # Type of package 0 = sample
+	dataSend += ' '
 
         if 3 in data:
             dataSend += str(1)
@@ -112,7 +115,9 @@ class ConnectionService(object):
             dataSend += ' '
         if 6 in data:
             dataSend += str(data.get(6))
-        #self.send(dataSend)
+        
+	return dataSend  #self.send(dataSend)
+	
 
 
     def sincroGPSPackage(self, data):
@@ -122,14 +127,15 @@ class ConnectionService(object):
     	dataSend += str(self.rtc.now()[4]) # Minuto
     	dataSend += ' '
     	dataSend += str(self.rtc.now()[5]) # Segundo
-	    dataSend += ' '
+	dataSend += ' '
         dataSend += '1' # Type of package 1 = sincroGPS
+	dataSend += ' '
         dataSend += str(data.get(0))
         dataSend += ' '
         dataSend += str(data.get(1))
         dataSend += ' '
         dataSend += str(data.get(2))
-        #self.send(dataSend)
+        return dataSend #self.send(dataSend)
 
 
     def noSincroGPSPackage(self, data):
@@ -139,6 +145,6 @@ class ConnectionService(object):
     	dataSend += str(self.rtc.now()[4]) # Minuto
     	dataSend += ' '
     	dataSend += str(self.rtc.now()[5]) # Segundo
-	    dataSend += ' '
+	dataSend += ' '
         dataSend += '2' # Type of package 1 = noSincroGPS
-        #self.send(dataSend)
+        return dataSend #self.send(dataSend)

@@ -68,7 +68,7 @@ class SamplingController(object):
             	dataSend = str(sensor) + " : " + str(muestra)
                 print(dataSend)
             	self.ram()
-            self.conexion.sendPackage(1, data)
+            self.conexion.sendPackage('sample', data)
             del data
             self.ram()
             i += 1
