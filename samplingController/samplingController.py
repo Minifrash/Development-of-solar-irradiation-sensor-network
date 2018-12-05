@@ -74,12 +74,6 @@ class SamplingController(object):
             i += 1
 
 
-    def ram(self):
-        gc.collect()
-        print('-----------------------------')
-        print('Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
-        print('-----------------------------')
-
     def connect(self, atributes):
         self.enabled = False
         self.confService(atributes)

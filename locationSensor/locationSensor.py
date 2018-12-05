@@ -22,13 +22,13 @@ class LocationSensor(object):
         self.res = 0
         self.ack = 0
         self.rtc = 0
-	self.erCounter = 3
-	self.conexion = 0
+        self.erCounter = 3
+        self.conexion = 0
         self.sincro = False
 
     def confService(self, atributes):
         self.mode = atributes['mode']
-	self.conexion = atributes['connectionService']
+        self.conexion = atributes['connectionService']
         self.uart = UART(1)
         self.ubx = ubx7(self.uart) # UBX7 device declaration
         self.cmd = ubx7msg() # commands to be sent to the ubx device

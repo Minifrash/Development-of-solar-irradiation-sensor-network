@@ -22,7 +22,7 @@ class ServiceManager(object):
         self.lock = 0
         self.error = 0
         self.dht = DHT22()
-	#self.connectionService = ConnectionService()
+        #self.connectionService = ConnectionService()
 
     def confService(self):
         self.servicesList = self.readFileConf('./serviceManager/conf.txt')
