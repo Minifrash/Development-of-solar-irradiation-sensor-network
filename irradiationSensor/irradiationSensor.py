@@ -29,7 +29,7 @@ class IrradiationSensor(object):
         self.adc.vref(1058)
         self.vBiasDAC = DAC('P22')
         self.vBiasDAC.write(0.135) # approximately 0.5 V
-        self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
+        self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)#self.adc.channel(pin='P14', attn = ADC.ATTN_11DB)
         self.lock = atributes['lock']
         #print(self.lock)
         self.samplingFrequency = atributes['samplingFrequency']
@@ -60,12 +60,12 @@ class IrradiationSensor(object):
                 #print("Last:" + str(self.lastRadiation))
                 count = 0
                 #El valor para el panel es aproximado pues se considera que devuelve 1000 en un día soleado de 25º
-                while((self.lastRadiation < 1.0 or self.lastRadiation > 1200.0) and count < self.erCounter):
+                while((self.lastRadiation < 1.0 or self.lastRadiation > 10000.0) and count < self.erCounter):
                     time.sleep(0.002)
                     self.lastRadiation = self.panel.voltage()
                     #print("LastBucle:" + str(self.lastRadiation))
                     count += 1
-                if (self.lastRadiation < 1.0 or self.lastRadiation > 1200.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
+                if (self.lastRadiation < 1.0 or self.lastRadiation > 10000.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
                     self.error = -11 #Incorrect Value Error code
                 else:
                     self.sumRadiation += self.lastRadiation

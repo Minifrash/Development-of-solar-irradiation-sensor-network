@@ -326,7 +326,7 @@ class ubx7:
         '''
         while not self.uart.any():
             pass
-        return self.uart.readall() # 'u2x2'
+        return self.uart.readall() # 'u2x2u2' 
 
 def string2bytes(*args):
     cargs = ()

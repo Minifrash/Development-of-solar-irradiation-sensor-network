@@ -23,6 +23,7 @@ class TemperatureOutSensor(object):
         self.lock = 0
         self.error = 0 #Codigo de error o cero si todo bien
         self.erCounter = 3 #Contador para reintentos tras error
+	self.errorLog = 0
 
     def confService(self, atributes):
         self.powerPin = Pin('P8', mode=Pin.OUT)
@@ -38,6 +39,8 @@ class TemperatureOutSensor(object):
         self.mode = atributes['mode']
         if not str(self.mode).isdigit() or self.mode < 0: #Comprobar si es un numero (isdigit) y si es negativo
             self.error = -9 #Incorrect AtributeValue Error
+	self.errorLog = atributes['errorLog']
+	self.errorLog.connect()
 
     def start(self):
         error = 0
@@ -63,8 +66,10 @@ class TemperatureOutSensor(object):
                 while((self.lastTemperature < (-55.0) or self.lastTemperature > 125.0) and count < self.erCounter):
                     self.lastTemperature = self.temp.read_temp_async()
                     count += 1
+		#self.lastTemperature = 126.0
                 if (self.lastTemperature < (-55.0) or self.lastTemperature > 125.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
                     self.error = -11 #Incorrect Value Error code
+		    self.errorLog.regError(self.serviceID, self.error)
                 else:
                     self.sumTemperature += self.lastTemperature
                     self.sampleCounter += 1

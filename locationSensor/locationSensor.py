@@ -1,6 +1,7 @@
 import sys
 import _thread
 import time
+import gc
 import utime as time
 
 from machine import UART, RTC
@@ -16,6 +17,7 @@ class LocationSensor(object):
         self.latitude = 0
         self.height = 0
         self.longitude = 0
+        self.frequency = 0
         self.uart = 0
         self.ubx = 0
         self.cmd = 0
@@ -25,10 +27,12 @@ class LocationSensor(object):
         self.erCounter = 3
         self.conexion = 0
         self.sincro = False
+        self.sampleThread = 0
 
     def confService(self, atributes):
         self.mode = atributes['mode']
         self.conexion = atributes['connectionService']
+        self.frequency = atributes['frequency']
         self.uart = UART(1)
         self.ubx = ubx7(self.uart) # UBX7 device declaration
         self.cmd = ubx7msg() # commands to be sent to the ubx device
@@ -36,13 +40,15 @@ class LocationSensor(object):
         self.ack = ubx7msg() #   ack (or nak) to be received from the ubx device
 
     def start(self): # Tener un timeout o una manera de comprobar si hay un error y inizializar el rtc de otra forma y dar una posicion fija
-        counter = 0
-        while(self.sincro != True and counter < self.erCounter):
-            try:
-                self.sincroGPS()
-            except:
-                print("Imposible conectar con GPS - Intento: " + str(counter))
-            counter+=1
+        #try:
+            #self.sincroGPS()
+	self.sampleThread = _thread.start_new_thread(self.sincroGPS, ())
+	 #   gc.collect()
+        #except:
+	 #   gc.collect()
+         #   print("Imposible conectar con GPS")# - Intento: " + str(counter))
+            #mandar mensaje conxesion incorrecta
+            #self.sampleThread = _thread.start_new_thread(self.sincroGPS, ())
 
     def updateAtribute(self, atribute, newValue):
         error = False
@@ -54,25 +60,61 @@ class LocationSensor(object):
 
     def sincroGPS(self):
         data = -1 # Posible error
+        counter = 0
+	print(_thread.stack_size(4096))
+        #gc.collect()
+        print('-----------------------------')
+        print('GPS : Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
+        print('-----------------------------')
         if self.mode == 0:
-            self.res = self.ubx.sendrecv(NAV.PVT)
-	    data = self.res.unpackpl('u4u2u1u1u1u1u1x1u4i4u1x1u1u1i4i4i4i4u4u4i4i4i4i4i4u4u4u2x2u4')
-	    self.rtc = RTC()
-	    self.rtc.init((data[4],data[6],data[7],data[8],data[9],data[10])) #year, month, day, hour, min, sec
-	    #print(self.rtc.now())
-	    self.longitude = data[24]
-	    self.latitude = data[28]
-	    self.height = data[32]
-            self.sincro = True
+            while(self.sincro != True):
+                try:
+		    print("OK")
+                    self.res = self.ubx.sendrecv(NAV.PVT)
+                    data = self.res.unpackpl('u4u2u1u1u1u1u1x1u4i4u1x1u1u1i4i4i4i4u4u4i4i4i4i4i4u4u4u2x2u4')
+                    self.rtc = RTC()
+                    self.rtc.init((data[4],data[6],data[7],data[8],data[9],data[10])) #year, month, day, hour, min, sec
+                    self.longitude = data[24]
+                    self.latitude = data[28]
+                    self.height = data[32]
+                    self.sincro = True
+		    gc.collect()
+                    #mandar mensaje conxesion correcta
+                    if self.sampleThread != 0:
+			print("MATO HILO")
+                        _thread.exit()
+			print("NO MATO")
+                except:
+                    #mandar mensaje conxesion incorrecta
+                 #   if counter < self.erCounter:
+		#	gc.collect()
+		#	print("Imposible conectar con GPS - Intento: " + str(counter))
+		#	print('-----------------------------')
+        	#	print('GPS : Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
+        	#	print('-----------------------------')
+                    #    counter += 1
+                    #else:
+		    print('-----------------------------')
+		    print('GPS ANTES collect: Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
+		    print('-----------------------------')
+		    gc.collect()
+		    print('-----------------------------')
+		    print('GPS ANTES: Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
+		    print('-----------------------------')
+		    time.sleep(self.frequency)
+		    gc.collect()
+		    print('-----------------------------')
+		    print('GPS DESPUES: Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
+		    print('-----------------------------')
 
     def getData(self):
-        if self.sincro != True:
-            try:
-                self.sincroGPS()
-                print("Conexion con GPS")
-                print(self.rtc.now()) # Envio de mensaje de conexion con el gps y la hora actual del RTC despues de conexion al Servidor
-            except:
-                print("Imposible conectar con GPS") # Registro del fallo al modulo de gestion de errores
+        #if self.sincro != True:
+        #    try:
+        #        self.sincroGPS()
+        #        print("Conexion con GPS")
+        #        print(self.rtc.now()) # Envio de mensaje de conexion con el gps y la hora actual del RTC despues de conexion al Servidor
+        #    except:
+        #        print("Imposible conectar con GPS") # Registro del fallo al modulo de gestion de errores
 	return 0
 
     def getLocation(self):

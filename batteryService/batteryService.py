@@ -1,4 +1,5 @@
 import sys
+import time
 from machine import Pin, ADC, DAC
 
 class BatteryService(object):
@@ -18,7 +19,11 @@ class BatteryService(object):
         self.Battery = self.adc.channel(pin='P14', attn = ADC.ATTN_11DB)
 
     def getData(self):
-        return self.Battery.voltage()
+    	self.powerPin(1)
+    	time.sleep(0.002)
+    	batt = self.Battery.voltage()
+    	self.powerPin(0)
+        return batt
 
     def connect(self):
         self.confService()
