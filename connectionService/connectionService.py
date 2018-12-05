@@ -72,9 +72,9 @@ class ConnectionService(object):
     	dataSend += str(self.rtc.now()[4]) # Minuto
     	dataSend += ' '
     	dataSend += str(self.rtc.now()[5]) # Segundo
-	dataSend += ' '
+        dataSend += ' '
         dataSend += '0' # Type of package 0 = sample
-	dataSend += ' '
+        dataSend += ' '
 
         if 3 in data:
             dataSend += str(1)
@@ -115,9 +115,12 @@ class ConnectionService(object):
             dataSend += ' '
         if 6 in data:
             dataSend += str(data.get(6))
-        
+
+        dataSend += ' '
+        dataSend += str(data.get('Batt'))
+
 	return dataSend  #self.send(dataSend)
-	
+
 
 
     def sincroGPSPackage(self, data):
@@ -127,9 +130,9 @@ class ConnectionService(object):
     	dataSend += str(self.rtc.now()[4]) # Minuto
     	dataSend += ' '
     	dataSend += str(self.rtc.now()[5]) # Segundo
-	dataSend += ' '
+        dataSend += ' '
         dataSend += '1' # Type of package 1 = sincroGPS
-	dataSend += ' '
+        dataSend += ' '
         dataSend += str(data.get(0))
         dataSend += ' '
         dataSend += str(data.get(1))
@@ -148,3 +151,4 @@ class ConnectionService(object):
 	dataSend += ' '
         dataSend += '2' # Type of package 1 = noSincroGPS
         return dataSend #self.send(dataSend)
+

@@ -10,6 +10,7 @@ from irradiationSensor.irradiationSensor import IrradiationSensor
 from locationSensor.locationSensor import LocationSensor
 from dht22.dht22 import DHT22
 from connectionService.connectionService import ConnectionService
+from errorLog.errorLog import ErrorLog
 
 
 class ServiceManager(object):
@@ -31,16 +32,25 @@ class ServiceManager(object):
     def start(self):
         self.confService()
 	self.wakeConnectionService()
+	self.wakeGPSService()
         self.wakeAllSensorsServices()
         self.wakeAllServices()
         self.NoSensorsServicesList.setdefault(1).sendData()
 
     def wakeConnectionService(self):
-        for serviceID, value in self.servicesList.items():
-            if serviceID == 7 and value.get('serviceEnabled') == 1:
-                atributes = self.getAtributesConf(serviceID)
-                self.NoSensorsServicesList.setdefault(serviceID, ConnectionService())
-                self.NoSensorsServicesList.setdefault(serviceID).connect(atributes)
+        if self.servicesList[7].get('serviceEnabled') == 1: #for serviceID, value in self.servicesList.items():
+            #if serviceID == 7 and value.get('serviceEnabled') == 1:
+	    atributes = self.getAtributesConf(7)
+	    self.NoSensorsServicesList.setdefault(7, ConnectionService())
+	    self.NoSensorsServicesList.setdefault(7).connect(atributes)
+
+    def wakeGPSService(self):
+        #for serviceID, value in self.servicesList.items():
+	if self.servicesList[2].get('serviceEnabled') == 1: #if serviceID == 2 and value.get('serviceEnabled') == 1:
+	    atributes = self.getAtributesConf(2)
+	    atributes.setdefault('connectionService', self.NoSensorsServicesList.setdefault(7)) # add instance ConnectionService()
+	    self.NoSensorsServicesList.setdefault(2, LocationSensor())
+	    self.NoSensorsServicesList.setdefault(2).connect(atributes)
 
     def wakeAllServices(self):
         for serviceID, value in self.servicesList.items():
@@ -61,11 +71,11 @@ class ServiceManager(object):
         return error
 
     def wakeSensorsServices(self, serviceID, value):
-        if serviceID == 2 and value.get('serviceEnabled') == 1:
-            atributes = self.getAtributesConf(serviceID)
-            atributes.setdefault('connectionService', self.NoSensorsServicesList.setdefault(7)) # add instance ConnectionService()
-            self.sensorsList.setdefault(serviceID, LocationSensor())
-            self.sensorsList.setdefault(serviceID).connect(atributes)
+        #if serviceID == 2 and value.get('serviceEnabled') == 1:
+        #    atributes = self.getAtributesConf(serviceID)
+        #    atributes.setdefault('connectionService', self.NoSensorsServicesList.setdefault(7)) # add instance ConnectionService()
+        #    self.sensorsList.setdefault(serviceID, LocationSensor())
+        #    self.sensorsList.setdefault(serviceID).connect(atributes)
         if serviceID == 3 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('lock', self.lock)
@@ -86,6 +96,7 @@ class ServiceManager(object):
         if serviceID == 6 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('lock', self.lock)
+	    atributes.setdefault('errorLog', ErrorLog())
             self.sensorsList.setdefault(serviceID, TemperatureOutSensor())
             self.sensorsList.setdefault(serviceID).connect(atributes)
 
