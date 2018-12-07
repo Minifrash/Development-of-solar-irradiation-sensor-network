@@ -1,29 +1,21 @@
 from serviceManager.serviceManager import ServiceManager
-import gc
+from libraries.ram import *
 import _thread
 import time
-#from deepsleep import DeepSleep
-#import deepsleep
 from machine import deepsleep
 
 
-gc.collect()
-print('-----------------------------')
-print('Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
-print('-----------------------------')
+collectRAM()
+showMemoryRAM()
 
-#print('A dormir 2 min')
-#deepsleep(120000)
-#print('A despertar de la siesta de 2 min')
-
-#sm = ServiceManager()
+sm = ServiceManager()
 #sm.confService()
 #sm.startService(1)
 #sm.startService(3)
 #sm.startService(4)
 #sm.startService(5)
 #sm.startService(6)
-#sm.start()
+sm.start()
 #sm.stopService(3)
 #sm.stopService(4)
 #sm.stopService(5)
@@ -54,4 +46,3 @@ print('-----------------------------')
 #print(sm.getAtributeConf(6, 'samplingFrequency'))
 
 #_thread.exit()
-

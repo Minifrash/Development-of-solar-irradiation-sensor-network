@@ -1,7 +1,7 @@
 import sys
 import _thread
 import time
-import gc
+#import gc
 
 class HumiditySensor(object):
 
@@ -17,6 +17,7 @@ class HumiditySensor(object):
         self.humidity = 0
         self.dht = 0
         self.lock = 0
+        self.error = 0
 
     def confService(self, atributes): # posible error de no contener todos los atributes esperados
         self.lock = atributes['lock']

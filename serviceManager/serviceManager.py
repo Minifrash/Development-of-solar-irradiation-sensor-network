@@ -1,7 +1,5 @@
 import sys
 import _thread
-import gc
-
 from samplingController.samplingController import SamplingController
 from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
 from temperatureInSensor.temperatureInSensor import TemperatureInSensor
@@ -23,7 +21,6 @@ class ServiceManager(object):
         self.lock = 0
         self.error = 0
         self.dht = DHT22()
-        #self.connectionService = ConnectionService()
 
     def confService(self):
         self.servicesList = self.readFileConf('./serviceManager/conf.txt')
@@ -31,26 +28,24 @@ class ServiceManager(object):
 
     def start(self):
         self.confService()
-	self.wakeConnectionService()
-	self.wakeGPSService()
+        self.wakeConnectionService()
+        self.wakeGPSService()
         self.wakeAllSensorsServices()
         self.wakeAllServices()
         self.NoSensorsServicesList.setdefault(1).sendData()
 
     def wakeConnectionService(self):
-        if self.servicesList[7].get('serviceEnabled') == 1: #for serviceID, value in self.servicesList.items():
-            #if serviceID == 7 and value.get('serviceEnabled') == 1:
-	    atributes = self.getAtributesConf(7)
-	    self.NoSensorsServicesList.setdefault(7, ConnectionService())
-	    self.NoSensorsServicesList.setdefault(7).connect(atributes)
+        if self.servicesList[7].get('serviceEnabled') == 1:
+            atributes = self.getAtributesConf(7)
+            self.NoSensorsServicesList.setdefault(7, ConnectionService())
+            self.NoSensorsServicesList.setdefault(7).connect(atributes)
 
     def wakeGPSService(self):
-        #for serviceID, value in self.servicesList.items():
-	if self.servicesList[2].get('serviceEnabled') == 1: #if serviceID == 2 and value.get('serviceEnabled') == 1:
-	    atributes = self.getAtributesConf(2)
-	    atributes.setdefault('connectionService', self.NoSensorsServicesList.setdefault(7)) # add instance ConnectionService()
-	    self.NoSensorsServicesList.setdefault(2, LocationSensor())
-	    self.NoSensorsServicesList.setdefault(2).connect(atributes)
+        if self.servicesList[2].get('serviceEnabled') == 1:
+            atributes = self.getAtributesConf(2)
+            atributes.setdefault('connectionService', self.NoSensorsServicesList.setdefault(7)) # add instance ConnectionService()
+            self.NoSensorsServicesList.setdefault(2, LocationSensor())
+            self.NoSensorsServicesList.setdefault(2).connect(atributes)
 
     def wakeAllServices(self):
         for serviceID, value in self.servicesList.items():
@@ -105,13 +100,13 @@ class ServiceManager(object):
         self.servicesList.setdefault(serviceID, newService)
         fileName = self.servicesList[self.serviceID].get('path')
         self.writeFileConf (fileName, self.servicesList)
-        return self.servicesList
+        #return self.servicesList
 
     def deleteServiceList(self, serviceID): # Tratar posible error que devuelba pop()
         deleteService = self.servicesList.pop(serviceID)
         fileName = self.servicesList[self.serviceID].get('path')
         self.writeFileConf (fileName, self.servicesList)
-        return self.servicesList
+        #return self.servicesList
 
     def getservicesList(self):
         return self.servicesList

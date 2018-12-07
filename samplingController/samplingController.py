@@ -1,9 +1,9 @@
 import time
-import gc
 from machine import RTC
 from machine import deepsleep
 from batteryService.batteryService import BatteryService
 from libraries.ram import *
+from machine import Timer
 
 class SamplingController(object):
 
@@ -12,13 +12,12 @@ class SamplingController(object):
         self.enabled = False
         self.sensorsList = dict()
         self.sendingFrequency = 0
-        #self.sleepTime = ""
-        #self.wakeTime = ""
         self.rtc = 0
         self.conexion = 0
         self.sleepTimeSeconds = 0
         self.wakeTimeSeconds = 0
         self.Battery = 0
+        #self.alarm = 0
 
     #Tratar posibles errores
     def confService(self, atributes):
@@ -27,11 +26,10 @@ class SamplingController(object):
         self.sleepTimeSeconds = self.conversionTime(atributes['sleepTime'])
         self.wakeTimeSeconds = self.conversionTime(atributes['wakeTime'])
         self.sensorsList = atributes['sensorsList']
-        #self.sleepTimeSeconds = self.conversionTime(self.sleepTime)
-        #self.wakeTimeSeconds = self.conversionTime(self.wakeTime)
         self.rtc = RTC()
         self.Battery = BatteryService()
-	self.Battery.connect()
+        self.Battery.connect()
+        #self.alarm = Timer.Alarm(self.sleep, self.sleepTimeSeconds-self.nowTimeInSeconds(), periodic=False)
 
     def start(self):
         self.sendData()
@@ -53,34 +51,29 @@ class SamplingController(object):
             error = True # error de atributo incorrecto -8
         return error
 
-    def sendData(self): # Modificar para enviar datos a mensajeriaSensor
-	collectRAM()        
-	showMemoryRAM()#self.ram()
+    def sendData(self):
+        collectRAM()
+        showMemoryRAM()
      	i = 0
-    	dataSend = 0# dict()
         while True:
-            data = dict()
+            dataSend = dict()
             time.sleep(self.sendingFrequency)
             print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
             for sensor, valor in self.sensorsList.items():
-            	muestra = valor.getData()
-            	data.setdefault(sensor, muestra)
-            	dataSend = str(sensor) + " : " + str(muestra)
-                print(dataSend)
-            	collectRAM()        
-		showMemoryRAM()#self.ram()
-		#self.ram()
+            	sample = valor.getData()
+            	dataSend.setdefault(sensor, sample)
+            	print(str(sensor) + " : " + str(sample))
+            collectRAM()
+            showMemoryRAM()
             data.setdefault('Batt', self.Battery.getData())
             self.conexion.sendPackage('sample', data)
             del data
-            collectRAM()        
-	    showMemoryRAM()#self.ram()
+            collectRAM()
+            showMemoryRAM()
             i += 1
-	    print('SleepSeconds: ' + str(self.sleepTimeSeconds))
+            print('SleepSeconds: ' + str(self.sleepTimeSeconds))
             if self.nowTimeInSeconds() >= self.sleepTimeSeconds:
                 self.sleep()
-
-
 
     def connect(self, atributes):
         self.enabled = False
@@ -90,16 +83,15 @@ class SamplingController(object):
     def disconnect(self):
         self.enabled = False
 
-
     def sleep(self):
         timeToSleep = 0
         seconds = self.nowTimeInSeconds()
         if self.wakeTimeSeconds < self.sleepTimeSeconds:
             timeToSleep =  (86400 - seconds) + self.wakeTimeSeconds
         else:
-            timeToSleep = self.wakeTimeSeconds - seconds #self.sleepTimeSeconds
-	print('Duermo:' + str(timeToSleep))
-	if timeToSleep >= 0:
+            timeToSleep = self.wakeTimeSeconds - seconds
+        print('Duermo:' + str(timeToSleep))
+        if timeToSleep >= 0:
             deepsleep(timeToSleep*1000)
 
     def conversionTime(self, timeData):
@@ -113,10 +105,10 @@ class SamplingController(object):
         seconds = self.rtc.now()[3] * 3600
         seconds += self.rtc.now()[4] * 60
         seconds += self.rtc.now()[5]
-	print('NowSeconds: ' + str(seconds))
+        print('NowSeconds: ' + str(seconds))
         return seconds
+
 
     ''' Funciones pendientes
     def wakeUp(self):
     '''
-

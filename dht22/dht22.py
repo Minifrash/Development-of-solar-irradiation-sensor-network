@@ -1,9 +1,10 @@
 import sys
 import _thread
 import time
-import gc
+#import gc
 from machine import Pin
 from libraries.dht import DHT
+from libraries.ram import *
 
 
 class DHT22(object):
@@ -76,7 +77,7 @@ class DHT22(object):
                     self.lastTemperature = result.temperature
                     self.sumTemperature += self.lastTemperature
                     self.sampleCounterTemperature += 1
-                gc.collect()
+                collectRAM()
                 self.powerPin(0)
                 self.lock.release()
             else:

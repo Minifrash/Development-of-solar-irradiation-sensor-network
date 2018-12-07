@@ -1,9 +1,8 @@
 import sys
 import _thread
 import time
-import gc
 import utime as time
-
+from libraries.ram import *
 from machine import UART, RTC
 from struct import unpack
 from libraries.ubx7 import *
@@ -40,15 +39,7 @@ class LocationSensor(object):
         self.ack = ubx7msg() #   ack (or nak) to be received from the ubx device
 
     def start(self): # Tener un timeout o una manera de comprobar si hay un error y inizializar el rtc de otra forma y dar una posicion fija
-        #try:
-            #self.sincroGPS()
-	self.sampleThread = _thread.start_new_thread(self.sincroGPS, ())
-	 #   gc.collect()
-        #except:
-	 #   gc.collect()
-         #   print("Imposible conectar con GPS")# - Intento: " + str(counter))
-            #mandar mensaje conxesion incorrecta
-            #self.sampleThread = _thread.start_new_thread(self.sincroGPS, ())
+        self.sampleThread = _thread.start_new_thread(self.sincroGPS, ())
 
     def updateAtribute(self, atribute, newValue):
         error = False
@@ -61,15 +52,10 @@ class LocationSensor(object):
     def sincroGPS(self):
         data = -1 # Posible error
         counter = 0
-	print(_thread.stack_size(4096))
-        #gc.collect()
-        print('-----------------------------')
-        print('GPS : Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
-        print('-----------------------------')
+        showMemoryRAM()
         if self.mode == 0:
             while(self.sincro != True):
                 try:
-		    print("OK")
                     self.res = self.ubx.sendrecv(NAV.PVT)
                     data = self.res.unpackpl('u4u2u1u1u1u1u1x1u4i4u1x1u1u1i4i4i4i4u4u4i4i4i4i4i4u4u4u2x2u4')
                     self.rtc = RTC()
@@ -78,34 +64,20 @@ class LocationSensor(object):
                     self.latitude = data[28]
                     self.height = data[32]
                     self.sincro = True
-		    gc.collect()
-                    #mandar mensaje conxesion correcta
+                    coordinates = dict() # Posiblemente añadir tambien la hora,min,sec en el diccionario
+                	coordinates.setdefault('longitude', self.longitude)
+                	coordinates.setdefault('latitude', self.latitude)
+                	coordinates.setdefault('height', self.height)
+                    self.conexion.sincroGPSPackage(coordinates)
+                    collectRAM()
                     if self.sampleThread != 0:
-			print("MATO HILO")
+                        print("MATO HILO")
                         _thread.exit()
-			print("NO MATO")
                 except:
-                    #mandar mensaje conxesion incorrecta
-                 #   if counter < self.erCounter:
-		#	gc.collect()
-		#	print("Imposible conectar con GPS - Intento: " + str(counter))
-		#	print('-----------------------------')
-        	#	print('GPS : Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
-        	#	print('-----------------------------')
-                    #    counter += 1
-                    #else:
-		    print('-----------------------------')
-		    print('GPS ANTES collect: Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
-		    print('-----------------------------')
-		    gc.collect()
-		    print('-----------------------------')
-		    print('GPS ANTES: Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
-		    print('-----------------------------')
-		    time.sleep(self.frequency)
-		    gc.collect()
-		    print('-----------------------------')
-		    print('GPS DESPUES: Free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
-		    print('-----------------------------')
+                    self.conexion.noSincroGPSPackage()
+                    collectRAM()
+                    time.sleep(self.frequency)
+		    collectRAM()
 
     def getData(self):
         #if self.sincro != True:
@@ -123,9 +95,6 @@ class LocationSensor(object):
     	#coordinates.setdefault('latitude', self.latitude)
     	#coordinates.setdefault('height', self.height)
         return self.longitude, self.latitude, self.height
-
-    def printval(self, val, name, units='', scaling=1):
-        print('{}: {} {}'.format(name, val*scaling, units))
 
     def connect(self, atributes):
         self.enabled = True
@@ -183,4 +152,7 @@ class LocationSensor(object):
         else:
             data = -1
         return data
+
+    def printval(self, val, name, units='', scaling=1):
+        print('{}: {} {}'.format(name, val*scaling, units))
 '''

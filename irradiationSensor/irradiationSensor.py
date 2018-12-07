@@ -1,8 +1,9 @@
 import sys
 import _thread
 import time
-import gc
+#import gc
 from machine import Pin, ADC, DAC
+from libraries.ram import *
 
 class IrradiationSensor(object):
 
@@ -70,7 +71,7 @@ class IrradiationSensor(object):
                 else:
                     self.sumRadiation += self.lastRadiation
                     self.sampleCounter += 1
-                gc.collect()
+                collectRAM()
                 self.powerPin(0)
                 self.lock.release()
             else:
