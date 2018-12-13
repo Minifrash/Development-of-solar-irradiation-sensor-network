@@ -6,12 +6,12 @@ class TemperatureInSensor(object):
 
     def __init__(self):
         self.serviceID = 4
+        self.enabled = False
         self.samplingFrequency = 0
         self.mode = 0
         self.lastTemperature = 0
         self.sumTemperature = 0
         self.sampleCounter = 0
-        self.enabled = False
         self.sampleThread = 0
         self.temp = 0
         self.dht = 0
@@ -20,9 +20,9 @@ class TemperatureInSensor(object):
 
     def confService(self, atributes):
         self.lock = atributes['lock']
-        print(self.lock)
+        #print(self.lock)
         self.dht = atributes['dht']
-        self.samplingFrequency = atributes['samplingFrecuency']
+        self.samplingFrequency = atributes['samplingFrequency']
         if not str(self.samplingFrequency).isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
             self.error = -9 #Incorrect AtributeValue Error
         self.mode = atributes['mode']

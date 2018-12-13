@@ -239,7 +239,7 @@ class ubx7msg:
 This class includes methods to communicate with the ubox receiver
 '''
 class ubx7:
-    def __init__(self, uart, baudrate=9600, bits=8, parity=None, stop=1, pins=('P22', 'P23')):
+    def __init__(self, uart, baudrate=9600, bits=8, parity=None, stop=1, pins=('P21', 'P11')): # pins=('P22', 'P23')
         self.uart = uart
         self.uart.init(baudrate, bits, parity, stop, pins=pins)
         self.buffsize = 1024
@@ -325,10 +325,8 @@ class ubx7:
         Wait until there's something to read and then read as much as possible
         '''
         while not self.uart.any():
-            #print(self.uart.any())
             pass
-        #print("paso")
-        return self.uart.readall()
+        return self.uart.readall() # 'u2x2u2' 
 
 def string2bytes(*args):
     cargs = ()
