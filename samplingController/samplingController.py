@@ -1,9 +1,7 @@
 import time
-from machine import RTC
-from machine import deepsleep
+from machine import RTC, deepsleep, Timer
 from batteryService.batteryService import BatteryService
 from libraries.ram import *
-from machine import Timer
 
 class SamplingController(object):
 
@@ -17,7 +15,8 @@ class SamplingController(object):
         self.sleepTimeSeconds = 0
         self.wakeTimeSeconds = 0
         self.Battery = 0
-        #self.alarm = 0
+        self.alarm = 0
+        self.errorLog = 0
 
     #Tratar posibles errores
     def confService(self, atributes):
@@ -29,35 +28,41 @@ class SamplingController(object):
         self.rtc = RTC()
         self.Battery = BatteryService()
         self.Battery.connect()
+        self.errorLog = atributes['errorLog']
+        #print(str(self.sleepTimeSeconds-self.nowTimeInSeconds()))
         #self.alarm = Timer.Alarm(self.sleep, self.sleepTimeSeconds-self.nowTimeInSeconds(), periodic=False)
 
     def start(self):
         self.sendData()
 
-    def setServicesList(self, sensorsList):
+    def setSensorsList(self, sensorsList):
         self.sensorsList = sensorsList
 
     def updateAtribute(self, atribute, newValue):
-        error = False
         if atribute == 'servicesList':
             self.servicesList = newValue
         elif atribute == 'sendingFrequency':
-            self.sendingFrequency = newValue
+	    if not str(newValue).isdigit() or newValue < 0:
+            	self.errorLog.regError(self.serviceID, -9) #Incorrect Atribute Error
+	    else:
+            	self.sendingFrequency = newValue
         elif atribute == 'sleepTime':
             self.sleepTime = newValue
         elif atribute == 'wakeTime':
             self.wakeTime = newValue
         else:
-            error = True # error de atributo incorrecto -8
-        return error
+	    self.errorLog.regError(self.serviceID, -8) #Incorrect Atribute Error code
 
     def sendData(self):
         collectRAM()
         showMemoryRAM()
      	i = 0
-        while True:
+        while self.enabled == True:
             dataSend = dict()
             time.sleep(self.sendingFrequency)
+            dataSend.setdefault('hour', self.rtc.now()[3])
+            dataSend.setdefault('minute', self.rtc.now()[4])
+            dataSend.setdefault('seconds', self.rtc.now()[5])
             print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
             for sensor, valor in self.sensorsList.items():
             	sample = valor.getData()
@@ -65,18 +70,16 @@ class SamplingController(object):
             	print(str(sensor) + " : " + str(sample))
             collectRAM()
             showMemoryRAM()
-            data.setdefault('Batt', self.Battery.getData())
-            self.conexion.sendPackage('sample', data)
-            del data
+            dataSend.setdefault('Batt', self.Battery.getData())
+            self.conexion.sendPackage('sample', dataSend)
+            del dataSend
             collectRAM()
             showMemoryRAM()
             i += 1
-            print('SleepSeconds: ' + str(self.sleepTimeSeconds))
-            if self.nowTimeInSeconds() >= self.sleepTimeSeconds:
-                self.sleep()
+            self.sleep()
 
     def connect(self, atributes):
-        self.enabled = False
+        self.enabled = True
         self.confService(atributes)
         self.start()
 
@@ -86,13 +89,15 @@ class SamplingController(object):
     def sleep(self):
         timeToSleep = 0
         seconds = self.nowTimeInSeconds()
-        if self.wakeTimeSeconds < self.sleepTimeSeconds:
-            timeToSleep =  (86400 - seconds) + self.wakeTimeSeconds
-        else:
-            timeToSleep = self.wakeTimeSeconds - seconds
-        print('Duermo:' + str(timeToSleep))
-        if timeToSleep >= 0:
-            deepsleep(timeToSleep*1000)
+	if seconds >= self.sleepTimeSeconds:
+	    if self.wakeTimeSeconds < self.sleepTimeSeconds:
+	        timeToSleep =  (86400 - seconds) + self.wakeTimeSeconds
+	    else:
+	        timeToSleep = self.wakeTimeSeconds - seconds
+	    print('Duermo:' + str(timeToSleep))
+	    self.conexion.sendPackage('sleep', timeToSleep)
+	    if timeToSleep >= 0:
+	        deepsleep(timeToSleep*1000)
 
     def conversionTime(self, timeData):
         auxTime = timeData.split(':')
@@ -105,10 +110,5 @@ class SamplingController(object):
         seconds = self.rtc.now()[3] * 3600
         seconds += self.rtc.now()[4] * 60
         seconds += self.rtc.now()[5]
-        print('NowSeconds: ' + str(seconds))
         return seconds
 
-
-    ''' Funciones pendientes
-    def wakeUp(self):
-    '''

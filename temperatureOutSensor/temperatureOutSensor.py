@@ -1,7 +1,5 @@
-import sys
 import _thread
 import time
-#import gc
 from libraries.ram import *
 from machine import Pin
 from libraries.onewire import DS18X20
@@ -22,8 +20,7 @@ class TemperatureOutSensor(object):
         self.ow = 0
         self.temp = 0
         self.lock = 0
-        self.error = 0 #Codigo de error o cero si todo bien
-        self.erCounter = 3 #Contador para reintentos tras error
+        self.erCounter = 3
         self.errorLog = 0
 
     def confService(self, atributes):
@@ -34,20 +31,18 @@ class TemperatureOutSensor(object):
         self.powerPin(0)
         self.lock = atributes['lock']
         self.samplingFrequency = atributes['samplingFrequency']
-        if not str(self.samplingFrequency).isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
-            self.error = -9 #Incorrect AtributeValue Error
+	self.errorLog = atributes['errorLog']
         self.mode = atributes['mode']
+        if not str(self.samplingFrequency).isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
+	    self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
         if not str(self.mode).isdigit() or self.mode < 0: #Comprobar si es un numero (isdigit) y si es negativo
-            self.error = -9 #Incorrect AtributeValue Error
+	    self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
 
     def start(self):
-        error = 0
         try:
             self.sampleThread = _thread.start_new_thread(self.sampling, ())
         except:
-            error = -3 #CreateThread Error code
-            #self.error = -3
-        return error
+	    self.errorLog.regError(self.serviceID, -3) #CreateThread Error code
 
     def sampling(self):
         while True:
@@ -64,8 +59,8 @@ class TemperatureOutSensor(object):
                 while((self.lastTemperature < (-55.0) or self.lastTemperature > 125.0) and count < self.erCounter):
                     self.lastTemperature = self.temp.read_temp_async()
                     count += 1
-                if (self.lastTemperature < (-55.0) or self.lastTemperature > 125.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
-                    self.error = -11 #Incorrect Value Error code
+                if (self.lastTemperature < (-55.0) or self.lastTemperature > 125.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa error
+		    self.errorLog.regError(self.serviceID, -11)#Incorrect Value Error code
                 else:
                     self.sumTemperature += self.lastTemperature
                     self.sampleCounter += 1
@@ -77,32 +72,27 @@ class TemperatureOutSensor(object):
                 _thread.exit()
 
     def updateAtribute(self, atribute, newValue):
-        error = 0
-        if not str(newValue).isdigit() or newValue < 0: #¿Lo hace serviceManager?
-            self.error = -9 #Incorrect AtributeValue Error
+        if not str(newValue).isdigit() or newValue < 0:
+	    self.errorLog.regError(self.serviceID, -9 ) #Incorrect AtributeValue Error
         if atribute == 'samplingFrequency':
             self.samplingFrequency = newValue
         elif atribute == 'mode':
             self.mode = newValue
         else:
-            error = -8 # error de atributo incorrecto
-            #self.error = -8 #Incorrect Atribute Error code
-        return error
+	    self.errorLog.regError(self.serviceID, -8) #Incorrect Atribute Error code
 
     def getData(self):
-        data = 0 # Posible error
+        data = 0 # En caso de error retorna 0
         self.lock.acquire()
         if self.mode == 0:
             try:
                 data = self.sumTemperature/self.sampleCounter
             except ZeroDivisionError:
-                error = -10
-                #self.error = -10 #ZeroDivisionError code
+		self.errorLog.regError(self.serviceID, -10) #ZeroDivisionError code
         elif self.mode == 1:
             data = self.lastTemperature
         else:
-            data = -9
-            #self.error = -9 #Incorrect AtributeValue Error
+	    self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
         self.sumTemperature = 0
         self.sampleCounter = 0
         self.lock.release()

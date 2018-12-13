@@ -1,11 +1,9 @@
 import time
-#import gc
 from machine import RTC
 from network import LoRa
 import socket
 import ubinascii
 from libraries.ram import *
-
 
 class ConnectionService(object):
 
@@ -45,7 +43,9 @@ class ConnectionService(object):
         if typePackage == 'sincroGPS': # Mensaje de muestras
             dataSend = self.sincroGPSPackage(data)
         if typePackage == 'noSincroGPS': # Mensaje de muestras
-            dataSend = self.noSincroGPSPackage(data)
+            dataSend = self.noSincroGPSPackage()
+	if typePackage == 'sleep': # Mensaje de muestras
+            dataSend = self.sleep(data)
         self.send(dataSend)
 
     def send(self, dataSend):
@@ -59,14 +59,13 @@ class ConnectionService(object):
     	dataRecv = self.conexion.recv(64)
         collectRAM()
 
-
     def samplePackage(self, data):
     	dataSend = ''
-    	dataSend += str(self.rtc.now()[3]) # Hora
+    	dataSend += str(data.get('hour')) # Hora dataSend += str(self.rtc.now()[3]) # Hora
     	dataSend += ' '
-    	dataSend += str(self.rtc.now()[4]) # Minuto
+    	dataSend += str(data.get('minute')) # Minuto dataSend += str(self.rtc.now()[4]) # Minuto
     	dataSend += ' '
-    	dataSend += str(self.rtc.now()[5]) # Segundo
+    	dataSend += str(data.get('seconds')) # Segundo dataSend += str(self.rtc.now()[5]) # Segundo
         dataSend += ' '
         dataSend += '0' # Type of package 0 = sample
         dataSend += ' '
@@ -113,41 +112,51 @@ class ConnectionService(object):
 
         dataSend += ' '
         dataSend += str(data.get('Batt'))
-        return dataSend  #self.send(dataSend)
-
-
+        return dataSend
 
     def sincroGPSPackage(self, data):
         dataSend = ''
-    	dataSend += str(self.rtc.now()[3]) # Hora
+    	dataSend += str(data.get('hour')) # Hora dataSend += str(self.rtc.now()[3]) # Hora
     	dataSend += ' '
-    	dataSend += str(self.rtc.now()[4]) # Minuto
+    	dataSend += str(data.get('minute')) # Minuto dataSend += str(self.rtc.now()[4]) # Minuto
     	dataSend += ' '
-    	dataSend += str(self.rtc.now()[5]) # Segundo
+    	dataSend += str(data.get('seconds')) # Segundo dataSend += str(self.rtc.now()[5]) # Segundo
         dataSend += ' '
         dataSend += '1' # Type of package 1 = sincroGPS
         dataSend += ' '
-        dataSend += str(data.get(0))
+        dataSend += str(data['longitude'])
         dataSend += ' '
-        dataSend += str(data.get(1))
+        dataSend += str(data['latitude'])
         dataSend += ' '
-        dataSend += str(data.get(2))
-        return dataSend #self.send(dataSend)
+        dataSend += str(data['height'])
+        return dataSend
 
-
-    def noSincroGPSPackage(self): # ¿Siempre pasar hora de inicio 00:00:00?
+    def noSincroGPSPackage(self, data): # ¿Siempre pasar hora de inicio 00:00:00?
         dataSend = ''
-    	dataSend += str(self.rtc.now()[3]) # Hora
+    	dataSend += str(data.get('hour')) # Hora dataSend += str(self.rtc.now()[3]) # Hora
     	dataSend += ' '
-    	dataSend += str(self.rtc.now()[4]) # Minuto
+    	dataSend += str(data.get('minute')) # Minuto dataSend += str(self.rtc.now()[4]) # Minuto
     	dataSend += ' '
-    	dataSend += str(self.rtc.now()[5]) # Segundo
+    	dataSend += str(data.get('seconds')) # Segundo dataSend += str(self.rtc.now()[5]) # Segundo
         dataSend += ' '
-        dataSend += '2' # Type of package 1 = noSincroGPS
-        dataSend = ' '
+        dataSend += '2' # Type of package 2 = noSincroGPS
+        dataSend += ' '
     	dataSend += '00' # Hora Inicio
     	dataSend += ' '
     	dataSend += '00' # Minuto Inicio
     	dataSend += ' '
     	dataSend += '00' # Segundo Inicio
-        return dataSend #self.send(dataSend)
+        return dataSend
+
+    def sleep(self, data):
+        dataSend = ''
+    	dataSend += str(self.rtc.now()[3]) # Hora
+    	dataSend += ' '
+    	dataSend += str(self.rtc.now()[4]) # Minuto
+    	dataSend += ' '
+    	dataSend += str(self.rtc.now()[5]) # Segundo
+        dataSend += ' '
+        dataSend += '3' # Type of package 3 = sleep
+        dataSend += ' '
+        dataSend += str(data)
+	return dataSend

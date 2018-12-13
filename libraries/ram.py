@@ -1,7 +1,7 @@
 import gc
 
 def collectRAM():
-    if gc.mem_free() <= 10000:
+    if gc.mem_free() <= 13000:
         gc.collect()
 
 def showMemoryRAM():
