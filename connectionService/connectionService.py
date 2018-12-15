@@ -32,9 +32,10 @@ class ConnectionService(object):
 
     def connect(self, atributes):
         self.confService(atributes)
+        self.sendPackage('connect', '')
 
-    #def disconnect(self):
-        #Desconectar conexion LoRa
+    def disconnect(self):
+        self.sendPackage('disconnect', '')
 
     def sendPackage(self, typePackage, data):
         dataSend = ''
@@ -44,8 +45,12 @@ class ConnectionService(object):
             dataSend = self.sincroGPSPackage(data)
         if typePackage == 'noSincroGPS': # Mensaje de muestras
             dataSend = self.noSincroGPSPackage()
-	if typePackage == 'sleep': # Mensaje de muestras
+        if typePackage == 'sleep': # Mensaje de muestras
             dataSend = self.sleep(data)
+        if typePackage == 'connect': # Mensaje para darse de anta en thingsboards
+            dataSend = self.connectPackage(data)
+        if typePackage == 'disconnect': # Mensaje para darse de baja en thingsboards
+            dataSend = self.disconnectPackage(data)
         self.send(dataSend)
 
     def send(self, dataSend):
@@ -156,7 +161,29 @@ class ConnectionService(object):
     	dataSend += ' '
     	dataSend += str(self.rtc.now()[5]) # Segundo
         dataSend += ' '
-        dataSend += '3' # Type of package 3 = sleep
+        dataSend += '5' # Type of package 3 = sleep
         dataSend += ' '
         dataSend += str(data)
-	return dataSend
+        return dataSend
+
+    def connectPackage(self, data):
+        dataSend = ''
+    	dataSend += str(self.rtc.now()[3]) # Hora
+    	dataSend += ' '
+    	dataSend += str(self.rtc.now()[4]) # Minuto
+    	dataSend += ' '
+    	dataSend += str(self.rtc.now()[5]) # Segundo
+        dataSend += ' '
+        dataSend += '3' # Type of package 3 = connect
+        return dataSend
+
+    def disconnectPackage(self, data):
+        dataSend = ''
+    	dataSend += str(self.rtc.now()[3]) # Hora
+    	dataSend += ' '
+    	dataSend += str(self.rtc.now()[4]) # Minuto
+    	dataSend += ' '
+    	dataSend += str(self.rtc.now()[5]) # Segundo
+        dataSend += ' '
+        dataSend += '4' # Type of package 4 = disconnect
+        return dataSend
