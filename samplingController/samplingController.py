@@ -22,8 +22,16 @@ class SamplingController(object):
     def confService(self, atributes):
         self.conexion = atributes['connectionService']
         self.sendingFrequency = atributes['sendingFrequency']
-        self.sleepTimeSeconds = self.conversionTime(atributes['sleepTime'])
-        self.wakeTimeSeconds = self.conversionTime(atributes['wakeTime'])
+        if not str(self.sendingFrequency).isdigit() or self.sendingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
+            self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+        if self.checkValidTime(atributes['sleepTime']) == True:
+            self.sleepTimeSeconds = self.conversionTime(atributes['sleepTime'])
+        else:
+            self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+        if self.checkValidTime(atributes['sleepTime']) == True:
+            self.wakeTimeSeconds = self.conversionTime(atributes['wakeTime'])
+        else:
+            self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
         self.sensorsList = atributes['sensorsList']
         self.rtc = RTC()
         self.Battery = BatteryService()
@@ -42,16 +50,22 @@ class SamplingController(object):
         if atribute == 'servicesList':
             self.servicesList = newValue
         elif atribute == 'sendingFrequency':
-	    if not str(newValue).isdigit() or newValue < 0:
-            	self.errorLog.regError(self.serviceID, -9) #Incorrect Atribute Error
+            if not str(newValue).isdigit() or newValue < 0:
+            	self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
 	    else:
             	self.sendingFrequency = newValue
         elif atribute == 'sleepTime':
-            self.sleepTime = newValue
+            if self.checkValidTime(newValue) == True:
+                self.sleepTimeSeconds = self.conversionTime(newValue)
+            else:
+                self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
         elif atribute == 'wakeTime':
-            self.wakeTime = newValue
+            if self.checkValidTime(newValue) == True:
+                self.wakeTimeSeconds = self.conversionTime(newValue)
+            else:
+                self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
         else:
-	    self.errorLog.regError(self.serviceID, -8) #Incorrect Atribute Error code
+            self.errorLog.regError(self.serviceID, -8) #Incorrect Atribute Error code
 
     def sendData(self):
         collectRAM()
@@ -112,3 +126,13 @@ class SamplingController(object):
         seconds += self.rtc.now()[5]
         return seconds
 
+    def checkValidTime(self, timeData):
+        validTime = True
+        auxTime = timeData.split(':')
+        if (eval(auxTime[0]) < 00) or (eval(auxTime[0]) > 24)
+            validTime = False
+        if (eval(auxTime[1]) < 00) or (eval(auxTime[1]) > 60)
+            validTime = False
+        if (eval(auxTime[2]) < 00) or (eval(auxTime[2]) > 60)
+            validTime = False
+        return validTime

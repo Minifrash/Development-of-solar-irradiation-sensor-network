@@ -27,8 +27,10 @@ class DHT22(object):
     def conf(self, atributes):
         self.powerPin = Pin('P8', mode=Pin.OUT)
         self.samplingFrequency = atributes['samplingFrequency']
+        if not str(self.samplingFrequency).isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
+            self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
         self.dht = DHT('P3',1)
-	self.errorLog = atributes['errorLog']
+        self.errorLog = atributes['errorLog']
 
     def start(self):
         if self.sampleThread == 0:
@@ -75,7 +77,7 @@ class DHT22(object):
 
 
     def getHumidity(self, mode):
-        data = 0 # En caso de error retorna 0 
+        data = 0 # En caso de error retorna 0
         self.lock.acquire()
         if self.enabledHumidity is True:
             if mode == 0:
@@ -93,7 +95,7 @@ class DHT22(object):
         return data
 
     def getTemperature(self, mode):
-        data = 0 # En caso de error retorna 0 
+        data = 0 # En caso de error retorna 0
         self.lock.acquire()
         if self.enabledTemperature is True:
             if mode == 0:
