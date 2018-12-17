@@ -85,6 +85,7 @@ class SamplingController(object):
             collectRAM()
             showMemoryRAM()
             dataSend.setdefault('Batt', self.Battery.getData())
+	    print(dataSend['Batt'])
             self.conexion.sendPackage('sample', dataSend)
             del dataSend
             collectRAM()
@@ -129,10 +130,10 @@ class SamplingController(object):
     def checkValidTime(self, timeData):
         validTime = True
         auxTime = timeData.split(':')
-        if (eval(auxTime[0]) < 00) or (eval(auxTime[0]) > 24)
+        if (eval(auxTime[0]) < 00) or (eval(auxTime[0]) > 24):
             validTime = False
-        if (eval(auxTime[1]) < 00) or (eval(auxTime[1]) > 60)
+        if (eval(auxTime[1]) < 00) or (eval(auxTime[1]) > 60):
             validTime = False
-        if (eval(auxTime[2]) < 00) or (eval(auxTime[2]) > 60)
+        if (eval(auxTime[2]) < 00) or (eval(auxTime[2]) > 60):
             validTime = False
         return validTime

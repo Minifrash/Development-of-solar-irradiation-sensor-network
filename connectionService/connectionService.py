@@ -73,47 +73,60 @@ class ConnectionService(object):
     	dataSend += str(data.get('seconds')) # Segundo dataSend += str(self.rtc.now()[5]) # Segundo
         dataSend += ' '
         dataSend += '0' # Type of package 0 = sample
-        dataSend += ' '
+        #dataSend += ' '
 
         if 3 in data:
+	    dataSend += ' '
             dataSend += str(1)
-            dataSend += ' '
+            #dataSend += ' '
         else:
+	    dataSend += ' '
             dataSend += str(0)
-            dataSend += ' '
+            #dataSend += ' '
 
         if 4 in data:
+	    dataSend += ' '
             dataSend += str(1)
-            dataSend += ' '
+            #dataSend += ' '
         else:
+	    dataSend += ' '
             dataSend += str(0)
-            dataSend += ' '
+            #dataSend += ' '
 
         if 5 in data:
+	    dataSend += ' '
             dataSend += str(1)
-            dataSend += ' '
+            #dataSend += ' '
         else:
+	    dataSend += ' '
             dataSend += str(0)
-            dataSend += ' '
+            #dataSend += ' '
 
         if 6 in data:
+	    dataSend += ' '
             dataSend += str(1)
-            dataSend += ' '
+            #dataSend += ' '
         else:
+	    dataSend += ' '
             dataSend += str(0)
-            dataSend += ' '
+            #dataSend += ' '
 
     	if 3 in data:
+	    dataSend += ' '
             dataSend += str(data.get(3))
-            dataSend += ' '
+            #dataSend += ' '
         if 4 in data:
+	    dataSend += ' '
             dataSend += str(data.get(4))
-            dataSend += ' '
+            #dataSend += ' '
         if 5 in data:
+	    dataSend += ' '
             dataSend += str(data.get(5))
-            dataSend += ' '
+            #dataSend += ' '
         if 6 in data:
+	    dataSend += ' '
             dataSend += str(data.get(6))
+	    #dataSend += ' '
 
         dataSend += ' '
         dataSend += str(data.get('Batt'))
