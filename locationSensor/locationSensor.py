@@ -34,6 +34,7 @@ class LocationSensor(object):
         self.cmd = ubx7msg() # commands to be sent to the ubx device
         self.res = ubx7msg() # responses to be received from the ubx device
         self.ack = ubx7msg() #   ack (or nak) to be received from the ubx device
+	self.rtc = RTC()
 
     def start(self): # Tener un timeout o una manera de comprobar si hay un error y inizializar el rtc de otra forma y dar una posicion fija
         self.sampleThread = _thread.start_new_thread(self.sincroGPS, ())
@@ -53,12 +54,12 @@ class LocationSensor(object):
                 try:
                     self.res = self.ubx.sendrecv(NAV.PVT)
                     data = self.res.unpackpl('u4u2u1u1u1u1u1x1u4i4u1x1u1u1i4i4i4i4u4u4i4i4i4i4i4u4u4u2x2u4')
-                    self.rtc = RTC()
                     self.rtc.init((data[4],data[6],data[7],data[8]+1,data[9],data[10])) #year, month, day, hour+1(GMT+1), min, sec
                     self.longitude = data[24]
                     self.latitude = data[28]
                     self.height = data[32]
                     self.sincro = True
+		    del data
                     data = dict() # Posiblemente añadir tambien la hora,min,sec en el diccionario
                     data.setdefault('hour', self.rtc.now()[3])
                     data.setdefault('minute', self.rtc.now()[4])
