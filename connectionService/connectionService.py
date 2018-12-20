@@ -44,7 +44,7 @@ class ConnectionService(object):
         if typePackage == 'sincroGPS': # Mensaje de muestras
             dataSend = self.sincroGPSPackage(data)
         if typePackage == 'noSincroGPS': # Mensaje de muestras
-            dataSend = self.noSincroGPSPackage()
+            dataSend = self.noSincroGPSPackage(data)
         if typePackage == 'sleep': # Mensaje de muestras
             dataSend = self.sleep(data)
         if typePackage == 'connect': # Mensaje para darse de anta en thingsboards

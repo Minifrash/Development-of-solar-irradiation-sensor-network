@@ -71,25 +71,36 @@ class SamplingController(object):
         collectRAM()
         showMemoryRAM()
      	i = 0
-        while self.enabled == True:
+	chrono = Timer.Chrono()
+	total = 0
+        while i<10:#self.enabled == True:
             dataSend = dict()
-            time.sleep(self.sendingFrequency)
+	    if (self.sendingFrequency - total) > 0:
+            	time.sleep(self.sendingFrequency-total)
+	    chrono.start()
             dataSend.setdefault('hour', self.rtc.now()[3])
             dataSend.setdefault('minute', self.rtc.now()[4])
             dataSend.setdefault('seconds', self.rtc.now()[5])
-            print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
+	    #print("Hora -> " + str(dataSend['hour']))
+	    #print("Minutos -> " + str(dataSend['minute']))
+	    #print("Segundos -> " + str(dataSend['seconds']))
+            #print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
             for sensor, valor in self.sensorsList.items():
             	sample = valor.getData()
             	dataSend.setdefault(sensor, sample)
-            	print(str(sensor) + " : " + str(sample))
+            	#print(str(sensor) + " : " + str(sample))
             collectRAM()
-            showMemoryRAM()
+            #showMemoryRAM()
             dataSend.setdefault('Batt', self.Battery.getData())
-	    print(dataSend['Batt'])
-            self.conexion.sendPackage('sample', dataSend)
+	    chrono.stop()
+	    total = chrono.read()
+	    chrono.reset()
+	    self.conexion.sendPackage('sample', dataSend)
+	    #self.conexion.disconnect()
+	    print(total)#print('Crono: ' + str(total))
             del dataSend
             collectRAM()
-            showMemoryRAM()
+            #showMemoryRAM()
             i += 1
             self.sleep()
 
@@ -104,7 +115,13 @@ class SamplingController(object):
     def sleep(self):
         timeToSleep = 0
         seconds = self.nowTimeInSeconds()
-	if seconds >= self.sleepTimeSeconds:
+	if seconds < self.wakeTimeSeconds and seconds >= self.sleepTimeSeconds:
+	    timeToSleep = self.wakeTimeSeconds - seconds
+	    print('Duermo:' + str(timeToSleep))
+	    self.conexion.sendPackage('sleep', timeToSleep)
+	    if timeToSleep >= 0:
+	        deepsleep(timeToSleep*1000)
+	if seconds > self.wakeTimeSeconds and seconds >= self.sleepTimeSeconds:
 	    if self.wakeTimeSeconds < self.sleepTimeSeconds:
 	        timeToSleep =  (86400 - seconds) + self.wakeTimeSeconds
 	    else:

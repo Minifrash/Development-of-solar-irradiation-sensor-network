@@ -50,7 +50,7 @@ class LocationSensor(object):
     def sincroGPS(self):
         showMemoryRAM()
         if self.mode == 0:
-            while(self.sincro == False):
+            while(self.sincro == False and self.enabled == True):
                 try:
                     self.res = self.ubx.sendrecv(NAV.PVT)
                     data = self.res.unpackpl('u4u2u1u1u1u1u1x1u4i4u1x1u1u1i4i4i4i4u4u4i4i4i4i4i4u4u4u2x2u4')
