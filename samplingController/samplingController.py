@@ -37,8 +37,6 @@ class SamplingController(object):
         self.Battery = BatteryService()
         self.Battery.connect()
         self.errorLog = atributes['errorLog']
-        #print(str(self.sleepTimeSeconds-self.nowTimeInSeconds()))
-        #self.alarm = Timer.Alarm(self.sleep, self.sleepTimeSeconds-self.nowTimeInSeconds(), periodic=False)
 
     def start(self):
         self.sendData()
@@ -69,21 +67,21 @@ class SamplingController(object):
 
     def sendData(self):
         collectRAM()
-        showMemoryRAM()
+        #showMemoryRAM()
      	i = 0
-	chrono = Timer.Chrono()
-	total = 0
+        #chrono = Timer.Chrono()
+        timeChrono = 0
         while i<10:#self.enabled == True:
             dataSend = dict()
-	    if (self.sendingFrequency - total) > 0:
-            	time.sleep(self.sendingFrequency-total)
-	    chrono.start()
+            if (self.sendingFrequency - timeChrono) > 0:
+            	time.sleep(self.sendingFrequency-timeChrono)
+            #chrono.start()
             dataSend.setdefault('hour', self.rtc.now()[3])
             dataSend.setdefault('minute', self.rtc.now()[4])
             dataSend.setdefault('seconds', self.rtc.now()[5])
-	    #print("Hora -> " + str(dataSend['hour']))
-	    #print("Minutos -> " + str(dataSend['minute']))
-	    #print("Segundos -> " + str(dataSend['seconds']))
+            #print("Hora -> " + str(dataSend['hour']))
+            #print("Minutos -> " + str(dataSend['minute']))
+            #print("Segundos -> " + str(dataSend['seconds']))
             #print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
             for sensor, valor in self.sensorsList.items():
             	sample = valor.getData()
@@ -92,17 +90,17 @@ class SamplingController(object):
             collectRAM()
             #showMemoryRAM()
             dataSend.setdefault('Batt', self.Battery.getData())
-	    chrono.stop()
-	    total = chrono.read()
-	    chrono.reset()
-	    self.conexion.sendPackage('sample', dataSend)
-	    #self.conexion.disconnect()
-	    print(total)#print('Crono: ' + str(total))
+            #chrono.stop()
+            #timeChrono = chrono.read()
+            #chrono.reset()
+            self.conexion.sendPackage('sample', dataSend)
+            #self.conexion.disconnect()
+            #print(total)#print('Crono: ' + str(total))
             del dataSend
             collectRAM()
             #showMemoryRAM()
             i += 1
-            self.sleep()
+            self.sleepPrueba()#self.sleep()
 
     def connect(self, atributes):
         self.enabled = True
@@ -112,24 +110,36 @@ class SamplingController(object):
     def disconnect(self):
         self.enabled = False
 
-    def sleep(self):
+    def sleepPrueba(self): # REPASAR
         timeToSleep = 0
         seconds = self.nowTimeInSeconds()
-	if seconds < self.wakeTimeSeconds and seconds >= self.sleepTimeSeconds:
-	    timeToSleep = self.wakeTimeSeconds - seconds
-	    print('Duermo:' + str(timeToSleep))
-	    self.conexion.sendPackage('sleep', timeToSleep)
-	    if timeToSleep >= 0:
-	        deepsleep(timeToSleep*1000)
-	if seconds > self.wakeTimeSeconds and seconds >= self.sleepTimeSeconds:
-	    if self.wakeTimeSeconds < self.sleepTimeSeconds:
-	        timeToSleep =  (86400 - seconds) + self.wakeTimeSeconds
-	    else:
-	        timeToSleep = self.wakeTimeSeconds - seconds
-	    print('Duermo:' + str(timeToSleep))
-	    self.conexion.sendPackage('sleep', timeToSleep)
-	    if timeToSleep >= 0:
-	        deepsleep(timeToSleep*1000)
+        if (seconds < self.wakeTimeSeconds and seconds >= self.sleepTimeSeconds) or (seconds < self.wakeTimeSeconds and seconds >= self.sleepTimeSeconds) :
+            timeToSleep = self.wakeTimeSeconds - seconds
+            print('Duermo:' + str(timeToSleep))
+            if timeToSleep >= 0:
+                deepsleep(timeToSleep*1000)
+        if seconds > self.wakeTimeSeconds and seconds >= self.sleepTimeSeconds:
+			timeToSleep =  (86400 - seconds) + self.wakeTimeSeconds
+			print('Duermo:' + str(timeToSleep))
+            if timeToSleep >= 0:
+                deepsleep(timeToSleep*1000)
+
+    def sleep(self): # REPASAR
+        timeToSleep = 0
+        seconds = self.nowTimeInSeconds()
+        if seconds < self.wakeTimeSeconds and seconds >= self.sleepTimeSeconds:
+            timeToSleep = self.wakeTimeSeconds - seconds
+            print('Duermo:' + str(timeToSleep))
+            if timeToSleep >= 0:
+                deepsleep(timeToSleep*1000)
+        if seconds > self.wakeTimeSeconds and seconds >= self.sleepTimeSeconds:
+            if self.wakeTimeSeconds < self.sleepTimeSeconds:
+                timeToSleep =  (86400 - seconds) + self.wakeTimeSeconds
+            else:
+                timeToSleep = self.wakeTimeSeconds - seconds
+            print('Duermo:' + str(timeToSleep))
+            if timeToSleep >= 0:
+                deepsleep(timeToSleep*1000)
 
     def conversionTime(self, timeData):
         auxTime = timeData.split(':')

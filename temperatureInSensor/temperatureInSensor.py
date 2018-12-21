@@ -21,7 +21,7 @@ class TemperatureInSensor(object):
         self.lock = atributes['lock']
         self.dht = atributes['dht']
         self.samplingFrequency = atributes['samplingFrequency']
-	self.errorLog = atributes['errorLog']
+        self.errorLog = atributes['errorLog']
         self.mode = atributes['mode']
         if not str(self.samplingFrequency).isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
             self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
@@ -30,10 +30,10 @@ class TemperatureInSensor(object):
 
     def start(self):
         atributes = dict()
-	atributes.setdefault('serviceID', self.serviceID)
-	atributes.setdefault('lock', self.lock)
-	atributes.setdefault('samplingFrequency', self.samplingFrequency)
-	atributes.setdefault('errorLog', self.errorLog)
+        atributes.setdefault('serviceID', self.serviceID)
+        atributes.setdefault('lock', self.lock)
+        atributes.setdefault('samplingFrequency', self.samplingFrequency)
+        atributes.setdefault('errorLog', self.errorLog)
         self.dht.connect(atributes)
 
     def updateAtribute(self, atribute, newValue):
@@ -41,6 +41,7 @@ class TemperatureInSensor(object):
             self.errorLog.regError(self.serviceID, -9 ) #Incorrect AtributeValue Error
         if atribute == 'samplingFrequency':
             self.samplingFrequency = newValue
+            self.dht.updateAtribute('samplingFrequency', self.samplingFrequency)
         elif atribute == 'mode':
             self.mode = newValue
         else:

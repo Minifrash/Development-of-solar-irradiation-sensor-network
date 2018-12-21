@@ -107,6 +107,10 @@ class DHT22(object):
         self.lock.release()
         return data
 
+    def updateAtribute(self, atribute, newValue):
+        if atribute == 'samplingFrequency':
+            self.samplingFrequency = newValue
+
     def connect(self, atributes):
         if atributes['serviceID'] == 4 and self.enabledTemperature is False:
             self.enabledTemperature = True

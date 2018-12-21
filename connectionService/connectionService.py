@@ -26,7 +26,6 @@ class ConnectionService(object):
     	while not lora.has_joined(): # wait until the module has joined the network
     	    time.sleep(2.5)
     	    print('Not yet joined...')
-
     	self.conexion = socket.socket(socket.AF_LORA, socket.SOCK_RAW) # create a LoRa socket
     	self.conexion.setsockopt(socket.SOL_LORA, socket.SO_DR, 5) # set the LoRaWAN data rate
 
@@ -45,13 +44,11 @@ class ConnectionService(object):
             dataSend = self.sincroGPSPackage(data)
         if typePackage == 'noSincroGPS': # Mensaje de muestras
             dataSend = self.noSincroGPSPackage(data)
-        if typePackage == 'sleep': # Mensaje de muestras
-            dataSend = self.sleep(data)
         if typePackage == 'connect': # Mensaje para darse de anta en thingsboards
             dataSend = self.connectPackage(data)
         if typePackage == 'disconnect': # Mensaje para darse de baja en thingsboards
             dataSend = self.disconnectPackage(data)
-        self.send(dataSend)
+        #self.send(dataSend)
 
     def send(self, dataSend):
     	# make the socket blocking
@@ -73,60 +70,48 @@ class ConnectionService(object):
     	dataSend += str(data.get('seconds')) # Segundo dataSend += str(self.rtc.now()[5]) # Segundo
         dataSend += ' '
         dataSend += '0' # Type of package 0 = sample
-        #dataSend += ' '
 
         if 3 in data:
-	    dataSend += ' '
+            dataSend += ' '
             dataSend += str(1)
-            #dataSend += ' '
         else:
-	    dataSend += ' '
+            dataSend += ' '
             dataSend += str(0)
-            #dataSend += ' '
 
         if 4 in data:
-	    dataSend += ' '
+            dataSend += ' '
             dataSend += str(1)
-            #dataSend += ' '
+            dataSend += ' '
         else:
-	    dataSend += ' '
+            dataSend += ' '
             dataSend += str(0)
-            #dataSend += ' '
 
         if 5 in data:
-	    dataSend += ' '
+            dataSend += ' '
             dataSend += str(1)
-            #dataSend += ' '
         else:
-	    dataSend += ' '
+            dataSend += ' '
             dataSend += str(0)
-            #dataSend += ' '
 
         if 6 in data:
-	    dataSend += ' '
+            dataSend += ' '
             dataSend += str(1)
-            #dataSend += ' '
         else:
-	    dataSend += ' '
+            dataSend += ' '
             dataSend += str(0)
-            #dataSend += ' '
 
     	if 3 in data:
-	    dataSend += ' '
+            dataSend += ' '
             dataSend += str(data.get(3))
-            #dataSend += ' '
         if 4 in data:
-	    dataSend += ' '
+            dataSend += ' '
             dataSend += str(data.get(4))
-            #dataSend += ' '
         if 5 in data:
-	    dataSend += ' '
+            dataSend += ' '
             dataSend += str(data.get(5))
-            #dataSend += ' '
         if 6 in data:
-	    dataSend += ' '
+            dataSend += ' '
             dataSend += str(data.get(6))
-	    #dataSend += ' '
 
         dataSend += ' '
         dataSend += str(data.get('Batt'))
@@ -164,19 +149,6 @@ class ConnectionService(object):
     	dataSend += '00' # Minuto Inicio
     	dataSend += ' '
     	dataSend += '00' # Segundo Inicio
-        return dataSend
-
-    def sleep(self, data):
-        dataSend = ''
-    	dataSend += str(self.rtc.now()[3]) # Hora
-    	dataSend += ' '
-    	dataSend += str(self.rtc.now()[4]) # Minuto
-    	dataSend += ' '
-    	dataSend += str(self.rtc.now()[5]) # Segundo
-        dataSend += ' '
-        dataSend += '5' # Type of package 3 = sleep
-        dataSend += ' '
-        dataSend += str(data)
         return dataSend
 
     def connectPackage(self, data):
