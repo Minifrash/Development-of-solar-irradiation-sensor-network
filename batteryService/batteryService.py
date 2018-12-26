@@ -1,4 +1,3 @@
-import sys
 import time
 from machine import Pin, ADC, DAC
 from libraries.ram import *

@@ -1,7 +1,5 @@
-import sys
 import _thread
 import time
-#import gc
 from machine import Pin, ADC, DAC
 from libraries.ram import *
 
@@ -21,7 +19,7 @@ class IrradiationSensor(object):
         self.panel = 0
         self.vBiasDAC = 0
         self.lock = 0
-        self.error = 0
+        self.errorLog = 0
         self.erCounter = 3
 
     def confService(self, atributes):
@@ -30,44 +28,38 @@ class IrradiationSensor(object):
         self.adc.vref(1058)
         self.vBiasDAC = DAC('P22')
         self.vBiasDAC.write(0.135) # approximately 0.5 V
-        self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)#self.adc.channel(pin='P14', attn = ADC.ATTN_11DB)
+        self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
         self.lock = atributes['lock']
-        #print(self.lock)
         self.samplingFrequency = atributes['samplingFrequency']
+	self.errorLog = atributes['errorLog']
+	self.mode = atributes['mode']
         if not str(self.samplingFrequency).isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
-            self.error = -9 #Incorrect AtributeValue Error
-        self.mode = atributes['mode']
+             self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
         if not str(self.mode).isdigit() or self.mode < 0: #Comprobar si es un numero (isdigit) y si es negativo
-            self.error = -9 #Incorrect AtributeValue Error
+             self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
 
     def start(self):
-        # Crear el thread para la funcion sendData()
-        error = 0
         try:
             self.sampleThread = _thread.start_new_thread(self.sampling, ())
         except:
-            error = -3 #CreateThread Error code
-            #self.error = -3
-        return error
+            self.errorLog.regError(self.serviceID, -3) #CreateThread Error code
 
     def sampling(self):
         while True:
             if self.enabled is True:
-                time.sleep(self.samplingFrequency-0.002) #time.sleep(self.samplingFrequency)
+                time.sleep(self.samplingFrequency-0.002) # Reducir el tiempo de muestreo teniendo en cuenta el sleep de powerPin
                 self.lock.acquire()
                 self.powerPin(1)
                 time.sleep(0.002)
                 self.lastRadiation = self.panel.voltage()
-                #print("Last:" + str(self.lastRadiation))
                 count = 0
                 #El valor para el panel es aproximado pues se considera que devuelve 1000 en un día soleado de 25º
                 while((self.lastRadiation < 1.0 or self.lastRadiation > 10000.0) and count < self.erCounter):
                     time.sleep(0.002)
                     self.lastRadiation = self.panel.voltage()
-                    #print("LastBucle:" + str(self.lastRadiation))
                     count += 1
                 if (self.lastRadiation < 1.0 or self.lastRadiation > 10000.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
-                    self.error = -11 #Incorrect Value Error code
+		    self.errorLog.regError(self.serviceID, -11) #Incorrect Value Error code
                 else:
                     self.sumRadiation += self.lastRadiation
                     self.sampleCounter += 1
@@ -78,33 +70,28 @@ class IrradiationSensor(object):
                 _thread.exit()
 
     def updateAtribute(self, atribute, newValue):
-        error = 0
-        if not str(newValue).isdigit() or newValue < 0: #¿Lo hace serviceManager?
-            self.error = -9 #Incorrect AtributeValue Error
-        if atribute == 'samplingFrequency':
-            self.samplingFrequency = newValue
-        elif atribute == 'mode':
-            self.mode = newValue
-        else:
-            error = -8 # error de atributo incorrecto
-            #self.error = -8 #Incorrect Atribute Error code
-        return error
-
+        if not str(newValue).isdigit() or newValue < 0:
+            self.errorLog.regError(self.serviceID, -9) #Incorrect Atribute Error
+	else:
+            if atribute == 'samplingFrequency':
+		self.samplingFrequency = newValue
+            elif atribute == 'mode':
+		self.mode = newValue
+	    else:
+		self.errorLog.regError(self.serviceID, -8) #Incorrect Atribute Error code
 
     def getData(self):
-        data = -1 # Posible error
+        data = 0 # En caso de error retorna 0 
         self.lock.acquire()
         if self.mode == 0:
             try:
-		#print("Sum:" + str(self.sumRadiation))
                 data = self.sumRadiation/self.sampleCounter
             except ZeroDivisionError:
-                self.error = -10 #ZeroDivisionError code
+		self.errorLog.regError(self.serviceID, -10) #ZeroDivisionError code
         elif self.mode == 1:
             data = self.lastRadiation
         else:
-            data = -9
-            #self.error = -9 #Incorrect AtributeValue Error
+	    self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
         self.sumRadiation = 0
         self.sampleCounter = 0
         self.lock.release()
