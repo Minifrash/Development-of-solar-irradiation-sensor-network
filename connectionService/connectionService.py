@@ -11,6 +11,7 @@ class ConnectionService(object):
         self.serviceID = 7
         self.conexion = 0
         self.rtc = 0
+        self.enabled = False
         self.euiGateway = 0
         self.keyGateway = 0
 
@@ -40,9 +41,14 @@ class ConnectionService(object):
     def connect(self, atributes):
         self.confService(atributes)
         self.sendPackage('connect', '')
+        self.enabled = True
 
     def disconnect(self):
-        self.sendPackage('disconnect', '')
+		self.enabled = False
+		self.sendPackage('disconnect', '')
+
+    def serviceEnabled(self):
+        return self.enabled
 
     def sendPackage(self, typePackage, data):
         dataSend = ''

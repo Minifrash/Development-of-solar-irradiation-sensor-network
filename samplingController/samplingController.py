@@ -48,9 +48,6 @@ class SamplingController(object):
     def start(self):
         self.sendData()
 
-    def setSensorsList(self, sensorsList):
-        self.sensorsList = sensorsList
-
     def updateAtribute(self, atribute, newValue):
         if atribute == 'servicesList':
             self.servicesList = newValue
@@ -116,6 +113,9 @@ class SamplingController(object):
 
     def disconnect(self):
         self.enabled = False
+
+    def serviceEnabled(self):
+        return self.enabled
 
 	def sleepPrueba2(self): # REPASAR
 		timeToSleep = 0
@@ -192,3 +192,5 @@ class SamplingController(object):
 			seconds = eval(auxTime[2])
 			self.rtc.init((1970, 1, 1, hora, minutos, seconds)) #hour(GMT+1), min, sec
 			
+#def setSensorsList(self, sensorsList):
+    #    self.sensorsList = sensorsList

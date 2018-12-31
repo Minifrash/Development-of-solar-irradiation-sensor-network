@@ -31,8 +31,8 @@ class IrradiationSensor(object):
         self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
         self.lock = atributes['lock']
         self.samplingFrequency = atributes['samplingFrequency']
-	self.errorLog = atributes['errorLog']
-	self.mode = atributes['mode']
+        self.errorLog = atributes['errorLog']
+        self.mode = atributes['mode']
         if not str(self.samplingFrequency).isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
              self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
         if not str(self.mode).isdigit() or self.mode < 0: #Comprobar si es un numero (isdigit) y si es negativo
@@ -59,7 +59,7 @@ class IrradiationSensor(object):
                     self.lastRadiation = self.panel.voltage()
                     count += 1
                 if (self.lastRadiation < 1.0 or self.lastRadiation > 10000.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
-		    self.errorLog.regError(self.serviceID, -11) #Incorrect Value Error code
+                    self.errorLog.regError(self.serviceID, -11) #Incorrect Value Error code
                 else:
                     self.sumRadiation += self.lastRadiation
                     self.sampleCounter += 1
@@ -81,7 +81,7 @@ class IrradiationSensor(object):
 		self.errorLog.regError(self.serviceID, -8) #Incorrect Atribute Error code
 
     def getData(self):
-        data = 0 # En caso de error retorna 0 
+        data = 0 # En caso de error retorna 0
         self.lock.acquire()
         if self.mode == 0:
             try:

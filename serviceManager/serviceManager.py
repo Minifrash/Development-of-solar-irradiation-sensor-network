@@ -13,6 +13,7 @@ class ServiceManager(object):
 
     def __init__(self):
         self.serviceID = 0
+        self.enabled = False
         self.servicesList =  dict()
         self.sensorsList = dict()
         self.noSensorsList = dict()
@@ -23,12 +24,21 @@ class ServiceManager(object):
         self.servicesList = self.readFileConf('./serviceManager/conf.txt')
         self.lock = _thread.allocate_lock()
 
+    def connection(self):
+		self.enabled = True
+		self.confService()
+		self.start()
+
+    def disconnect(self):
+		self.enabled = False
+		
+    def serviceEnabled(self):
+        return self.enabled
+
     def start(self):
-        self.confService()
         self.wakePrimaryServices()
         self.wakeAllSensorsServices()
         self.wakeAllServices()
-        self.noSensorsList.setdefault(1).sendData() # Bucle que muestrea en samplingController
 
     def wakePrimaryServices(self):
         if self.servicesList[7].get('serviceEnabled') == 1:
@@ -161,7 +171,7 @@ class ServiceManager(object):
                  atributes = self.getAtributesConf(serviceID)
                  if self.servicesList[serviceID].get('serviceSensor') == 1:
                      self.wakeSensorsServices(serviceID, self.servicesList.setdefault(serviceID))
-                     self.noSensorsList.setdefault(1).setSensorsList(self.sensorsList)
+                     self.noSensorsList.setdefault(1).updateAtribute('servicesList', self.sensorsList)#self.noSensorsList.setdefault(1).setSensorsList(self.sensorsList)
                      #self.noSensorsList.setdefault(8).setSensorsList(self.sensorsList)
                  elif self.servicesList[serviceID].get('serviceSensor') != 1:
                      self.wakeServices(serviceID, self.servicesList.setdefault(serviceID))
@@ -182,7 +192,7 @@ class ServiceManager(object):
                  if self.servicesList[serviceID].get('serviceSensor') == 1:
                      self.sensorsList[serviceID].disconnect()
                      self.sensorsList.pop(serviceID)
-                     self.noSensorsList.setdefault(1).setSensorsList(self.sensorsList)
+                     self.noSensorsList.setdefault(1).updateAtribute('servicesList', self.sensorsList)#self.noSensorsList.setdefault(1).setSensorsList(self.sensorsList)
                      #self.noSensorsList.setdefault(8).setSensorsList(self.sensorsList)
                  elif self.servicesList[serviceID].get('serviceSensor') != 1:
                      self.noSensorsList[serviceID].disconnect()
