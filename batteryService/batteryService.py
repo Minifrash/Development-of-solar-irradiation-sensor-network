@@ -1,6 +1,6 @@
 import time
 from machine import Pin, ADC, DAC
-from libraries.ram import *
+from libraries.memoryManager import *
 
 
 class BatteryService(object):
@@ -23,7 +23,7 @@ class BatteryService(object):
     	self.powerPin(1)
     	time.sleep(0.002)
     	batt = self.Battery.voltage()
-        collectRAM()
+        collectMemory()
     	self.powerPin(0)
         return batt
 

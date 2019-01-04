@@ -3,7 +3,7 @@ from machine import RTC
 from network import LoRa
 import socket
 import ubinascii
-from libraries.ram import *
+from libraries.memoryManager import *
 
 class ConnectionService(object):
 
@@ -69,7 +69,7 @@ class ConnectionService(object):
     	self.conexion.send(dataSend) # send some data
     	self.conexion.setblocking(False) # make the socket non-blocking
     	dataRecv = self.conexion.recv(64) # get any data received (if any...)
-        collectRAM()
+        collectMemory()
 
     def samplePackage(self, data):
     	dataSend = ''

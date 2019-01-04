@@ -1,6 +1,6 @@
 import _thread
 import time
-from libraries.ram import *
+from libraries.memoryManager import *
 from machine import Pin
 from libraries.onewire import DS18X20
 from libraries.onewire import OneWire
@@ -21,7 +21,7 @@ class TemperatureOutSensor(object):
         self.temp = 0
         self.lock = 0
         self.erCounter = 3
-        self.errorLog = 0
+        self.errorLogService = 0
 
     def confService(self, atributes):
         self.powerPin = Pin('P8', mode=Pin.OUT)
@@ -31,18 +31,18 @@ class TemperatureOutSensor(object):
         self.powerPin(0)
         self.lock = atributes['lock']
         self.samplingFrequency = atributes['samplingFrequency']
-        self.errorLog = atributes['errorLog']
+        self.errorLogService = atributes['errorLogService']
         self.mode = atributes['mode']
         if not str(self.samplingFrequency).isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
-            self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+            self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
         if not str(self.mode).isdigit() or self.mode < 0: #Comprobar si es un numero (isdigit) y si es negativo
-            self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+            self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
 
     def start(self):
         try:
             self.sampleThread = _thread.start_new_thread(self.sampling, ())
         except:
-            self.errorLog.regError(self.serviceID, -3) #CreateThread Error code
+            self.errorLogService.regError(self.serviceID, -3) #CreateThread Error code
 
     def sampling(self):
         while True:
@@ -60,11 +60,11 @@ class TemperatureOutSensor(object):
                     self.lastTemperature = self.temp.read_temp_async()
                     count += 1
                 if (self.lastTemperature < (-55.0) or self.lastTemperature > 125.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa error
-                    self.errorLog.regError(self.serviceID, -11)#Incorrect Value Error code
+                    self.errorLogService.regError(self.serviceID, -11) #Incorrect Value Error code
                 else:
                     self.sumTemperature += self.lastTemperature
                     self.sampleCounter += 1
-                collectRAM()
+                collectMemory()
                 self.powerPin(0)
                 self.lock.release()
             else:
@@ -72,13 +72,13 @@ class TemperatureOutSensor(object):
 
     def updateAtribute(self, atribute, newValue):
         if not str(newValue).isdigit() or newValue < 0:
-            self.errorLog.regError(self.serviceID, -9 ) #Incorrect AtributeValue Error
+            self.errorLogService.regError(self.serviceID, -9 ) #Incorrect AtributeValue Error
         if atribute == 'samplingFrequency':
             self.samplingFrequency = newValue
         elif atribute == 'mode':
             self.mode = newValue
         else:
-            self.errorLog.regError(self.serviceID, -8) #Incorrect Atribute Error code
+            self.errorLogService.regError(self.serviceID, -8) #Incorrect Atribute Error code
 
     def getData(self):
         data = 0 # En caso de error retorna 0
@@ -87,11 +87,11 @@ class TemperatureOutSensor(object):
             try:
                 data = self.sumTemperature/self.sampleCounter
             except ZeroDivisionError:
-                self.errorLog.regError(self.serviceID, -10) #ZeroDivisionError code
+                self.errorLogService.regError(self.serviceID, -10) #ZeroDivisionError code
         elif self.mode == 1:
             data = self.lastTemperature
         else:
-            self.errorLog.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+            self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
             self.sumTemperature = 0
             self.sampleCounter = 0
             self.lock.release()

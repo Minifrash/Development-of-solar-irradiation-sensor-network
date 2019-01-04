@@ -2,9 +2,9 @@ import _thread
 import time
 from machine import Pin, Timer
 from libraries.dht import DHT
-from libraries.ram import *
+from libraries.memoryManager import *
 
-class DHT22(object):
+class DHT22Sensor(object):
 
     def __init__(self):
         self.enabledHumidity = False
@@ -21,14 +21,14 @@ class DHT22(object):
         self.dht = 0
         self.lock = 0
         self.enabled = False
-        self.errorLog = 0
+        self.errorLogService = 0
         self.erCounter = 3
 
     def conf(self, atributes):
         self.powerPin = Pin('P8', mode=Pin.OUT)
         self.samplingFrequency = atributes['samplingFrequency']
         self.dht = DHT('P3',1)
-        self.errorLog = atributes['errorLog']
+        self.errorLogService = atributes['errorLogService']
 
     def start(self):
         if self.sampleThread == 0:
@@ -51,8 +51,8 @@ class DHT22(object):
                         time.sleep(0.375)
                         result = self.dht.read()
                         count += 1
-                    if (result.humidity < 0.0 or result.humidity > 100.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.errorLog
-                        self.errorLog.regError(5, -11)#Incorrect Value Error code
+                    if (result.humidity < 0.0 or result.humidity > 100.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.errorLogSensor
+                        self.errorLogService.regError(5, -11)#Incorrect Value Error code
                     self.lastHumidity = result.humidity
                     self.sumHumidity += self.lastHumidity
                     self.sampleCounterHumidity += 1
@@ -62,12 +62,12 @@ class DHT22(object):
                         time.sleep(0.375)
                         result = self.dht.read()
                         count += 1
-                    if (result.temperature < (-40.0) or result.temperature > 125.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.errorLog
-                        self.errorLog.regError(4, -11)#Incorrect Value Error code
+                    if (result.temperature < (-40.0) or result.temperature > 125.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.errorLogSensor
+                        self.errorLogService.regError(4, -11)#Incorrect Value Error code
                     self.lastTemperature = result.temperature
                     self.sumTemperature += self.lastTemperature
                     self.sampleCounterTemperature += 1
-                collectRAM()
+                collectMemory()
                 self.powerPin(0)
                 self.lock.release()
                 #chrono.stop()
@@ -86,11 +86,11 @@ class DHT22(object):
                 try:
                     data = self.sumHumidity/self.sampleCounterHumidity
                 except ZeroDivisionError:
-                    self.errorLog.regError(5, -10) #ZeroDivisionError code
+                    self.errorLogService.regError(5, -10) #ZeroDivisionError code
             elif mode == 1:
                 data = self.lastHumidity
             else:
-                self.errorLog.regError(5, -9) #Incorrect AtributeValue Error
+                self.errorLogService.regError(5, -9) #Incorrect AtributeValue Error
             self.sumHumidity = 0
             self.sampleCounterHumidity = 0
         self.lock.release()
@@ -104,11 +104,11 @@ class DHT22(object):
                 try:
                     data = self.sumTemperature/self.sampleCounterTemperature
                 except ZeroDivisionError:
-                    self.errorLog.regError(4, -10) #ZeroDivisionError code
+                    self.errorLogService.regError(4, -10) #ZeroDivisionError code
             elif mode == 1:
                 data = self.lastTemperature
             else:
-                self.errorLog.regError(4, -9) #Incorrect AtributeValue Error
+                self.errorLogService.regError(4, -9) #Incorrect AtributeValue Error
             self.sumTemperature = 0
             self.sampleCounterTemperature = 0
         self.lock.release()
@@ -135,7 +135,7 @@ class DHT22(object):
         elif serviceID == 5 and self.enabledHumidity == True:
             self.enabledHumidity = False
         else:
-            self.errorLog.regError(serviceID, -7) #Fallo en el serviceID o ya esta desconectado #Non-Active Service Error
+            self.errorLogService.regError(serviceID, -7) #Fallo en el serviceID o ya esta desconectado #Non-Active Service Error
 
         if self.enabledTemperature == False and self.enabledHumidity == False:
             self.sampleThread = 0

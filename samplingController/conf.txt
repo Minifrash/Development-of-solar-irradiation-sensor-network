@@ -1,1 +1,0 @@
-{'serviceID': 1, 'samplingFrecuency': 5, 'sendingFrequency': 5, 'sleepTime': 13, 'wakeTime': 20}

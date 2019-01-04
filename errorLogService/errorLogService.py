@@ -1,6 +1,6 @@
 from machine import RTC
 
-class ErrorLog(object):
+class ErrorLogService(object):
 
     def __init__(self):
         self.serviceID = 8

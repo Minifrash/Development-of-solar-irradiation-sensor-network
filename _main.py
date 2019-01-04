@@ -1,13 +1,13 @@
-from serviceManager.serviceManager import ServiceManager
-from libraries.ram import *
+from managerService.managerService import ManagerService
+from libraries.memoryManager import *
 import _thread
 import time
 
 
-collectRAM()
-showMemoryRAM()
+collectMemory()
+showMemory()
 
-sm = ServiceManager()
+sm = ManagerService()
 sm.connection()
 
 # Test

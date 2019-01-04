@@ -1,15 +1,15 @@
 import _thread
-from samplingController.samplingController import SamplingController
+from samplingService.samplingService import SamplingService
 from temperatureOutSensor.temperatureOutSensor import TemperatureOutSensor
 from temperatureInSensor.temperatureInSensor import TemperatureInSensor
 from humiditySensor.humiditySensor import HumiditySensor
 from irradiationSensor.irradiationSensor import IrradiationSensor
-from locationSensor.locationSensor import LocationSensor
-from dht22.dht22 import DHT22
+from locationService.locationService import LocationService
+from dht22Sensor.dht22Sensor import DHT22Sensor
 from connectionService.connectionService import ConnectionService
-from errorLog.errorLog import ErrorLog
+from errorLogService.errorLogService import ErrorLogService
 
-class ServiceManager(object):
+class ManagerService(object):
 
     def __init__(self):
         self.serviceID = 0
@@ -18,7 +18,7 @@ class ServiceManager(object):
         self.sensorsList = dict()
         self.noSensorsList = dict()
         self.lock = 0
-        self.dht = DHT22()
+        self.dht22Sensor = DHT22Sensor()
 
     def confService(self):
         self.servicesList = self.readFileConf('./serviceManager/conf.txt')
@@ -31,7 +31,7 @@ class ServiceManager(object):
 
     def disconnect(self):
 		self.enabled = False
-		
+
     def serviceEnabled(self):
         return self.enabled
 
@@ -47,16 +47,16 @@ class ServiceManager(object):
             self.noSensorsList.setdefault(7).connect(atributes)
         if self.servicesList[8].get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(8)
-            atributes.setdefault('sensorsList', self.sensorsList)
-            atributes.setdefault('noSensorsList', self.noSensorsList)
+            atributes.setdefault('sensorsList', self.sensorsList) #Quitar
+            atributes.setdefault('noSensorsList', self.noSensorsList) #Quitar
             atributes.setdefault('descriptionsErrors', self.readFileConf(atributes['descriptionsErrorsFile']))
             atributes.setdefault('descriptionsWarnings', self.readFileConf(atributes['descriptionsWarningsFile']))
-            self.noSensorsList.setdefault(8, ErrorLog())
+            self.noSensorsList.setdefault(8, ErrorLogService())
             self.noSensorsList.setdefault(8).connect(atributes)
         if self.servicesList[2].get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(2)
             atributes.setdefault('connectionService', self.noSensorsList.setdefault(7)) # add instance ConnectionService()
-            self.noSensorsList.setdefault(2, LocationSensor())
+            self.noSensorsList.setdefault(2, LocationService())
             self.noSensorsList.setdefault(2).connect(atributes)
 
     def wakeAllSensorsServices(self):
@@ -67,27 +67,27 @@ class ServiceManager(object):
         if serviceID == 3 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('lock', self.lock)
-            atributes.setdefault('errorLog', self.noSensorsList.setdefault(8))
+            atributes.setdefault('errorLogService', self.noSensorsList.setdefault(8))
             self.sensorsList.setdefault(serviceID, IrradiationSensor())
             self.sensorsList.setdefault(serviceID).connect(atributes)
         if serviceID == 4 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('lock', self.lock)
-            atributes.setdefault('dht', self.dht)
-            atributes.setdefault('errorLog', self.noSensorsList.setdefault(8))
+            atributes.setdefault('dht22Sensor', self.dht22Sensor)
+            atributes.setdefault('errorLogService', self.noSensorsList.setdefault(8))
             self.sensorsList.setdefault(serviceID, TemperatureInSensor())
             self.sensorsList.setdefault(serviceID).connect(atributes)
         if serviceID == 5 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('lock', self.lock)
-            atributes.setdefault('dht', self.dht)
-            atributes.setdefault('errorLog', self.noSensorsList.setdefault(8))
+            atributes.setdefault('dht22Sensor', self.dht22Sensor)
+            atributes.setdefault('errorLogService', self.noSensorsList.setdefault(8))
             self.sensorsList.setdefault(serviceID, HumiditySensor())
             self.sensorsList.setdefault(serviceID).connect(atributes)
         if serviceID == 6 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('lock', self.lock)
-            atributes.setdefault('errorLog', self.noSensorsList.setdefault(8))
+            atributes.setdefault('errorLogService', self.noSensorsList.setdefault(8))
             self.sensorsList.setdefault(serviceID, TemperatureOutSensor())
             self.sensorsList.setdefault(serviceID).connect(atributes)
 
@@ -100,8 +100,8 @@ class ServiceManager(object):
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('sensorsList', self.sensorsList)
             atributes.setdefault('connectionService', self.noSensorsList.setdefault(7))
-            atributes.setdefault('errorLog', self.noSensorsList.setdefault(8))
-            self.noSensorsList.setdefault(serviceID, SamplingController())
+            atributes.setdefault('errorLogService', self.noSensorsList.setdefault(8))
+            self.noSensorsList.setdefault(serviceID, SamplingService())
             self.noSensorsList.setdefault(serviceID).connect(atributes)
 
     def addServicesList(self, serviceID, path, serviceEnabled):
@@ -125,7 +125,7 @@ class ServiceManager(object):
             dic = eval(f.read())
             f.close()
         except OSError:
-	    self.noSensorsList.setdefault(8).regError(self.serviceID, -1) #IOError code
+			self.noSensorsList.setdefault(8).regError(self.serviceID, -1) #IOError code
         return dic
 
     def writeFileConf(self, fileName, data):
@@ -134,7 +134,7 @@ class ServiceManager(object):
             f.write(str(data))
             f.close()
         except OSError:
-	    self.noSensorsList.setdefault(8).regError(self.serviceID, -1) #IOError code
+			self.noSensorsList.setdefault(8).regError(self.serviceID, -1) #IOError code
 
     def getAtributesConf(self, serviceID):
         fileName = self.servicesList[serviceID].get('path')
