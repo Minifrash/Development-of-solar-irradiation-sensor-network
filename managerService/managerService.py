@@ -21,7 +21,7 @@ class ManagerService(object):
         self.dht22Sensor = DHT22Sensor()
 
     def confService(self):
-        self.servicesList = self.readFileConf('./serviceManager/conf.txt')
+        self.servicesList = self.readFileConf('./managerService/conf.txt')
         self.lock = _thread.allocate_lock()
 
     def connection(self):
