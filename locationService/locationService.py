@@ -61,11 +61,11 @@ class LocationService(object):
                     data.setdefault('hour', self.rtc.now()[3])
                     data.setdefault('minute', self.rtc.now()[4])
                     data.setdefault('seconds', self.rtc.now()[5])
-                    self.connectionService.sendPackage('sincroTime', data) # REPASAR
+                    self.connectionService.sendPackage('time', data) # REPASAR
                     data.setdefault('longitude', self.longitude)
                     data.setdefault('latitude', self.latitude)
                     data.setdefault('height', self.height)
-                    self.connectionService.sendPackage('sincroGPS', data)
+                    self.connectionService.sendPackage('location', data)
                     collectMemory()
                     if self.sampleThread != 0:
                         print("MATO HILO")

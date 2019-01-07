@@ -24,9 +24,9 @@ class ConnectionService(object):
     	app_eui = ubinascii.unhexlify(self.euiGateway) # eui del Gateway
     	app_key = ubinascii.unhexlify(self.keyGateway) # key del gateway
     	lora.join(activation=LoRa.OTAA, auth=(app_eui, app_key), timeout=0) # join a network using OTAA (Over the Air Activation)
-    	#while not lora.has_joined(): # wait until the module has joined the network
-    	#    time.sleep(2.5)
-    	#    print('Not yet joined...')
+    	while not lora.has_joined(): # wait until the module has joined the network
+    	    time.sleep(2.5)
+    	    print('Not yet joined...')
     	self.conexion = socket.socket(socket.AF_LORA, socket.SOCK_RAW) # create a LoRa socket
     	self.conexion.setsockopt(socket.SOL_LORA, socket.SO_DR, 5) # set the LoRaWAN data rate
 
@@ -54,15 +54,15 @@ class ConnectionService(object):
         dataSend = ''
         if typePackage == 'sample': # Mensaje de muestras
             dataSend = self.samplePackage(data)
-        if typePackage == 'sincroGPS': # Mensaje de muestras
-            dataSend = self.sincroGPSPackage(data)
-        if typePackage == 'sincroTime': # Mensaje de muestras
-            dataSend = self.sincroTimePackage(data)
+        if typePackage == 'location': # Mensaje de muestras
+            dataSend = self.locationPackage(data)
+        if typePackage == 'time': # Mensaje de muestras
+            dataSend = self.timePackage(data)
         if typePackage == 'connect': # Mensaje para darse de anta en thingsboards
             dataSend = self.connectPackage(data)
         if typePackage == 'disconnect': # Mensaje para darse de baja en thingsboards
             dataSend = self.disconnectPackage(data)
-        #self.send(dataSend)
+        self.send(dataSend)
 
     def send(self, dataSend):
     	self.conexion.setblocking(True) # make the socket blocking
@@ -127,7 +127,7 @@ class ConnectionService(object):
         dataSend += str(data.get('Batt'))
         return dataSend
 
-    def sincroGPSPackage(self, data):
+    def locationPackage(self, data):
         dataSend = ''
     	dataSend += str(data.get('hour')) # Hora dataSend += str(self.rtc.now()[3]) # Hora
     	dataSend += ' '
@@ -144,7 +144,7 @@ class ConnectionService(object):
         dataSend += str(data['height'])
         return dataSend
 
-    def sincroTimePackage(self, data):
+    def timePackage(self, data):
         dataSend = ''
     	dataSend += str(data.get('hour')) # Hora dataSend += str(self.rtc.now()[3]) # Hora
     	dataSend += ' '

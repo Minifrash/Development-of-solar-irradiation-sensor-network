@@ -40,7 +40,7 @@ class SamplingService(object):
 			data.setdefault('minute', eval(auxTime[1]))
 			data.setdefault('seconds', eval(auxTime[2]))
 			self.rtc.init((1970, 1, 1, data['hour'], data['minute'], data['seconds']))
-			self.connectionService.sendPackage('sincroTime', data) # Envio de mensaje hora de inicio
+			self.connectionService.sendPackage('time', data) # Envio de mensaje hora de inicio
         self.errorLogService = atributes['errorLogService']
         self.Battery = BatteryService() # Quitar
         self.Battery.connect() # Quitar

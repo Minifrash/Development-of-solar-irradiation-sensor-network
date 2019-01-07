@@ -31,6 +31,10 @@ class ManagerService(object):
 
     def disconnect(self):
 		self.enabled = False
+		for sensor in self.sensorsList.values():
+			sensor.disconnect()
+		for service in self.noSensorsList.values():
+			service.disconnect()
 
     def serviceEnabled(self):
         return self.enabled
@@ -45,7 +49,7 @@ class ManagerService(object):
             atributes = self.getAtributesConf(7)
             self.noSensorsList.setdefault(7, ConnectionService())
             self.noSensorsList.setdefault(7).connect(atributes)
-        if self.servicesList[8].get('serviceEnabled') == 1:
+        if self.servicesList[8].get('serviceEnabled') == 1: # Falta añadir ConnectionService
             atributes = self.getAtributesConf(8)
             atributes.setdefault('sensorsList', self.sensorsList) #Quitar
             atributes.setdefault('noSensorsList', self.noSensorsList) #Quitar
