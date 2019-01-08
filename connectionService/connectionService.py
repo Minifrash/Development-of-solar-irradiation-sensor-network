@@ -34,7 +34,7 @@ class ConnectionService(object):
         if atribute == 'euiGateway':
             self.euiGateway = newValue
         elif atribute == 'keyGateway':
-			self.keyGateway = newValue
+	    self.keyGateway = newValue
         else:
             self.errorLog.regError(self.serviceID, -8) #Incorrect Atribute Error code
 
@@ -91,7 +91,6 @@ class ConnectionService(object):
         if 4 in data:
             dataSend += ' '
             dataSend += str(1)
-            dataSend += ' '
         else:
             dataSend += ' '
             dataSend += str(0)

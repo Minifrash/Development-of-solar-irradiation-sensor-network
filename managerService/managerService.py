@@ -59,6 +59,7 @@ class ManagerService(object):
             self.noSensorsList.setdefault(8).connect(atributes)
         if self.servicesList[2].get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(2)
+	    atributes.setdefault('errorLogService', self.noSensorsList.setdefault(8))
             atributes.setdefault('connectionService', self.noSensorsList.setdefault(7)) # add instance ConnectionService()
             self.noSensorsList.setdefault(2, LocationService())
             self.noSensorsList.setdefault(2).connect(atributes)
@@ -138,7 +139,7 @@ class ManagerService(object):
             f.write(str(data))
             f.close()
         except OSError:
-			self.noSensorsList.setdefault(8).regError(self.serviceID, -1) #IOError code
+	    self.noSensorsList.setdefault(8).regError(self.serviceID, -1) #IOError code
 
     def getAtributesConf(self, serviceID):
         fileName = self.servicesList[serviceID].get('path')
@@ -152,7 +153,6 @@ class ManagerService(object):
         return value
 
     def updateAtributeConf(self, serviceID, atribute, value):
-        error = False
         fileName = self.servicesList[serviceID].get('path')
         atributes = self.readFileConf(fileName)
         atributes[atribute] = value
@@ -162,9 +162,8 @@ class ManagerService(object):
             self.noSensorsList[serviceID].updateAtribute(atribute, value)
         elif self.servicesList[serviceID].get('serviceSensor') == 1 and self.servicesList[serviceID].get('serviceEnabled') == 1:
             self.sensorsList[serviceID].updateAtribute(atribute, value)
-        else: # Si se solicita a un servicio que no sean los sensores o el samplingController
-            error = True
-        return error
+        else:# Si se solicita a un servicio que no sean los sensores o el samplingController
+            self.noSensorsList.setdefault(8).regError(self.serviceID, -8) #Incorrect Atribute Error code
 
     def startService(self, serviceID): # ¿Tener en cuenta posible segunda lista de instancias para los servicios que no son sensores?
         if serviceID in self.servicesList:

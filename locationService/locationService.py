@@ -24,11 +24,13 @@ class LocationService(object):
         self.connectionService = 0
         self.sincro = False
         self.sampleThread = 0
+	self.errorLogService = 0
 
     def confService(self, atributes):
         self.mode = atributes['mode']
         self.connectionService = atributes['connectionService']
         self.frequency = atributes['frequency']
+	self.errorLogService = atributes['errorLogService']
         self.uart = UART(1)
         self.ubx = ubx7(self.uart) # UBX7 device declaration
         self.cmd = ubx7msg() # commands to be sent to the ubx device
@@ -42,8 +44,10 @@ class LocationService(object):
     def updateAtribute(self, atribute, newValue): # No tiene errorLogService
         if atribute == 'mode':
             self.mode = newValue
-        #else:
-        #    self.errorLogService.regError(self.serviceID, -8) #Incorrect Atribute Error code
+	elif atribute == 'frequency':
+            self.frequency = newValue
+        else:
+            self.errorLogService.regError(self.serviceID, -8) #Incorrect Atribute Error code
 
     def sincroGPS(self):
         if self.mode == 0:

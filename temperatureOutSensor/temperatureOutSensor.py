@@ -92,9 +92,9 @@ class TemperatureOutSensor(object):
             data = self.lastTemperature
         else:
             self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
-            self.sumTemperature = 0
-            self.sampleCounter = 0
-            self.lock.release()
+        self.sumTemperature = 0
+        self.sampleCounter = 0
+        self.lock.release()
         return data
 
     def disconnect(self):

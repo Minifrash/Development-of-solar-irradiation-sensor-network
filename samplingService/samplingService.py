@@ -34,13 +34,13 @@ class SamplingService(object):
         self.sensorsList = atributes['sensorsList']
         self.rtc = RTC()
         if self.rtc.now()[0] == 1970: # Meter en una funcion
-			auxTime = atributes['wakeTime'].split(':')
-			data = dict() # Posiblemente añadir tambien la hora,min,sec en el diccionario
-			data.setdefault('hour', eval(auxTime[0]))
-			data.setdefault('minute', eval(auxTime[1]))
-			data.setdefault('seconds', eval(auxTime[2]))
-			self.rtc.init((1970, 1, 1, data['hour'], data['minute'], data['seconds']))
-			self.connectionService.sendPackage('time', data) # Envio de mensaje hora de inicio
+	    auxTime = atributes['wakeTime'].split(':')
+	    data = dict() # Posiblemente añadir tambien la hora,min,sec en el diccionario
+	    data.setdefault('hour', eval(auxTime[0]))
+	    data.setdefault('minute', eval(auxTime[1]))
+	    data.setdefault('seconds', eval(auxTime[2]))
+	    self.rtc.init((1970, 1, 1, data['hour'], data['minute'], data['seconds']))
+	    self.connectionService.sendPackage('time', data) # Envio de mensaje hora de inicio
         self.errorLogService = atributes['errorLogService']
         self.Battery = BatteryService() # Quitar
         self.Battery.connect() # Quitar
@@ -94,13 +94,13 @@ class SamplingService(object):
             	print(str(sensor) + " : " + str(sample))
             collectMemory()
             showMemory()
-            #dataSend.setdefault('Batt', self.Battery.getData())
+            dataSend.setdefault('Batt', self.Battery.getData())
             self.connectionService.sendPackage('sample', dataSend)
             del dataSend
             collectMemory()
             #showMemory()
             i += 1
-            #self.sleep() #self.sleep()
+            self.sleep() #self.sleep()
             chrono.stop()
             timeChrono = chrono.read()
             chrono.reset()
@@ -184,13 +184,12 @@ class SamplingService(object):
             validTime = False
         return validTime
 
-	def timeInit(self, wakeTime):
-		if self.rtc.now()[0] == 1970:
-			auxTime = wakeTime.split(':')
-			hora = eval(auxTime[0])
-			minutos = eval(auxTime[1])
-			seconds = eval(auxTime[2])
-			self.rtc.init((1970, 1, 1, hora, minutos, seconds)) #hour(GMT+1), min, sec
+    def timeInit(self, wakeTime):
+	if self.rtc.now()[0] == 1970:
+	    auxTime = wakeTime.split(':')
+	    hora = eval(auxTime[0])
+	    minutos = eval(auxTime[1])
+	    seconds = eval(auxTime[2])
+	    self.rtc.init((1970, 1, 1, hora, minutos, seconds)) #hour(GMT+1), min, sec
 
-    #def setSensorsList(self, sensorsList):
-    #    self.sensorsList = sensorsList
+
