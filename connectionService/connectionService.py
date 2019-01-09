@@ -44,8 +44,8 @@ class ConnectionService(object):
         self.enabled = True
 
     def disconnect(self):
-		self.enabled = False
-		self.sendPackage('disconnect', '')
+	self.enabled = False
+	self.sendPackage('disconnect', '')
 
     def serviceEnabled(self):
         return self.enabled
@@ -54,14 +54,18 @@ class ConnectionService(object):
         dataSend = ''
         if typePackage == 'sample': # Mensaje de muestras
             dataSend = self.samplePackage(data)
-        if typePackage == 'location': # Mensaje de muestras
+        elif typePackage == 'location': # Mensaje de muestras
             dataSend = self.locationPackage(data)
-        if typePackage == 'time': # Mensaje de muestras
+        elif typePackage == 'time': # Mensaje de muestras
             dataSend = self.timePackage(data)
-        if typePackage == 'connect': # Mensaje para darse de anta en thingsboards
+        elif typePackage == 'connect': # Mensaje para darse de anta en thingsboards
             dataSend = self.connectPackage(data)
-        if typePackage == 'disconnect': # Mensaje para darse de baja en thingsboards
+        elif typePackage == 'disconnect': # Mensaje para darse de baja en thingsboards
             dataSend = self.disconnectPackage(data)
+	elif typePackage == 'errorWarning': # Mensaje de error
+            dataSend = self.errorWarningPackage(data)
+	else:
+	    print("FALLOOOO")
         self.send(dataSend)
 
     def send(self, dataSend):
@@ -180,4 +184,17 @@ class ConnectionService(object):
     	dataSend += str(self.rtc.now()[5]) # Segundo
         dataSend += ' '
         dataSend += '4' # Type of package 4 = disconnect
+        return dataSend
+
+    def errorWarningPackage(self, data):
+        dataSend = ''
+    	dataSend += str(data.get('hour')) # Hora dataSend += str(self.rtc.now()[3]) # Hora
+    	dataSend += ' '
+    	dataSend += str(data.get('minute')) # Minuto dataSend += str(self.rtc.now()[4]) # Minuto
+    	dataSend += ' '
+    	dataSend += str(data.get('seconds')) # Segundo dataSend += str(self.rtc.now()[5]) # Segundo
+        dataSend += ' '
+        dataSend += '5' # Type of package 5 = errorWarning
+    	dataSend += ' '
+    	dataSend += data.get('description') # DescriptionError
         return dataSend

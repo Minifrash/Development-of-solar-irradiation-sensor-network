@@ -8,20 +8,17 @@ class ErrorLogService(object):
         self.enabled = False
         self.namesFiles = dict()
         self.warningLog = dict()
-        self.sensorsList = dict() # Quitar
-        self.noSensorsList = dict() # Quitar
+        self.connectionService = 0
         self.descriptionsErrors = dict()
         self.descriptionsWarnings = dict()
-        self.erCounter = 5
 
     def confService(self, atributes):
         self.namesFiles.setdefault('errorFile', atributes['errorFile'])
         self.namesFiles.setdefault('warningFile', atributes['warningFile'])
         self.rtc = RTC()
-        self.sensorsList = atributes['sensorsList']  # Quitar
-        self.noSensorsList = atributes['noSensorsList']  # Quitar
-        self.descriptionsErrors = atributes['descriptionsErrors']
-        self.descriptionsWarnings = atributes['descriptionsWarnings']
+        self.connectionService = atributes['connectionService']
+        self.descriptionsErrors = atributes['errorsList']
+        self.descriptionsWarnings = atributes['warningsLits']
 
     def updateAtribute(self, atribute, newValue): # Probar
 	if atribute == 'errorFile':
@@ -34,12 +31,6 @@ class ErrorLogService(object):
 		self.descriptionsWarnings = newValue
 	else:
 		self.regError(self.serviceID, -8) #Incorrect Atribute Error code
-			
-    #def setSensorsList(self, sensorsList):
-    #    self.sensorsList = sensorsList
-
-    #def setnoSensorsList(self, noSensorsList):
-    #    self.noSensorsList = noSensorsList
 
     def connect(self, atributes):
         self.confService(atributes)
@@ -64,9 +55,9 @@ class ErrorLogService(object):
 		fileError = open(self.namesFiles.get('errorFile'), "a")
 		fileError.write(time + " " + str(serviceID) + " " + description + "/n")
 		fileError.close()
-		self.notifyError()
+		self.notifyError(error)
 	    if error in self.descriptionsWarnings:
-		description = self.descriptionsWarnings.setdefault(error)
+		description = self.descriptionsWarnings[error].get('description') #self.descriptionsWarnings.setdefault(error) 
 		counter = self.counterCheck(serviceID, error) #Comprobación de contador
 		self.updateFile(self.namesFiles.get('warningFile'))
 		fileWarning = open(self.namesFiles.get('warningFile'), "a")
@@ -80,13 +71,11 @@ class ErrorLogService(object):
 	if error not in self.warningLog[serviceID]:
 	    self.warningLog[serviceID].setdefault(error, 0)
 	counter = self.warningLog[serviceID].setdefault(error) #Comprueba cuantas veces ha sucedido "error"
-	if(counter < self.erCounter):
+	if(counter < self.descriptionsWarnings[error].get('erLimit')): #self.erCounter): 
 	    counter += 1
 	    self.warningLog[serviceID].update({error: counter})
 	else:
-	    print("Se procede a reiniciar el servicio con ID: " + str(serviceID))
-	    #self.sensorsList.setdefault(serviceID).disconnect()
-	    #self.sensorsList.setdefault(serviceID).connect()
+	    self.notifyWarning(error)
 	    counter = 0
 	    self.warningLog[serviceID].update({error: counter})
 	return counter
@@ -101,13 +90,26 @@ class ErrorLogService(object):
 	    while i < 10:
 		fileaux.write(lines[i])
 		i += 1
-		fileaux.close()
+	    fileaux.close()
 
-    def notifyError(self):
-        self.noSensorsServicesList.setdefault(7).sendPackage('error', dataSend)
+    def notifyError(self, error):
+        dataSend = dict()
+        dataSend.setdefault('hour', self.rtc.now()[3])
+        dataSend.setdefault('minute', self.rtc.now()[4])
+        dataSend.setdefault('seconds', self.rtc.now()[5])
+        dataSend.setdefault('description', self.descriptionsErrors.setdefault(error))
+        self.connectionService.sendPackage('errorWarning', dataSend)
+
+    def notifyWarning(self, warning):
+        dataSend = dict()
+        dataSend.setdefault('hour', self.rtc.now()[3])
+        dataSend.setdefault('minute', self.rtc.now()[4])
+        dataSend.setdefault('seconds', self.rtc.now()[5])
+        dataSend.setdefault('description', self.descriptionsWarnings[warning].get('description'))#self.descriptionsWarnings.setdefault(warning)
+        self.connectionService.sendPackage('errorWarning', dataSend)
 
     def disconnect(self):
 	self.enabled = False
-		
+
     def serviceEnabled(self):
         return self.enabled

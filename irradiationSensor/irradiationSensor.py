@@ -22,6 +22,15 @@ class IrradiationSensor(object):
         self.errorLogService = 0
         self.erCounter = 3
 
+    def checkAtributes(self, atributes):
+	if ('mode' in atributes) and ('samplingFrequency' in atributes):
+	    if not str(atributes['samplingFrequency']).isdigit() or atributes['samplingFrequency'] < 0: #Comprobar si es un numero (isdigit) y si es negativo
+        	self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+            if not str(atributes['mode']).isdigit() or atributes['mode'] < 0: #Comprobar si es un numero (isdigit) y si es negativo
+		self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+	else:
+	    self.errorLogService.regError(self.serviceID, -2) #ConfFile Error
+
     def confService(self, atributes):
         self.powerPin = Pin('P8', mode=Pin.OUT)
         self.adc = ADC()
@@ -29,14 +38,11 @@ class IrradiationSensor(object):
         self.vBiasDAC = DAC('P22')
         self.vBiasDAC.write(0.135) # approximately 0.5 V
         self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
+	self.errorLogService = atributes['errorLogService']
         self.lock = atributes['lock']
+	self.checkAtributes(atributes)
         self.samplingFrequency = atributes['samplingFrequency']
-        self.errorLogService = atributes['errorLogService']
         self.mode = atributes['mode']
-        if not str(self.samplingFrequency).isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
-             self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
-        if not str(self.mode).isdigit() or self.mode < 0: #Comprobar si es un numero (isdigit) y si es negativo
-             self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
 
     def start(self):
         try:
