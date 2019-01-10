@@ -25,16 +25,16 @@ class ManagerService(object):
         self.lock = _thread.allocate_lock()
 
     def connection(self):
-		self.enabled = True
-		self.confService()
-		self.start()
+	self.enabled = True
+	self.confService()
+	self.start()
 
     def disconnect(self):
-		self.enabled = False
-		for sensor in self.sensorsList.values():
-			sensor.disconnect()
-		for service in self.noSensorsList.values():
-			service.disconnect()
+	self.enabled = False
+	for sensor in self.sensorsList.values():
+	    sensor.disconnect()
+	for service in self.noSensorsList.values():
+	    service.disconnect()
 
     def serviceEnabled(self):
         return self.enabled
@@ -49,12 +49,11 @@ class ManagerService(object):
             atributes = self.getAtributesConf(7)
             self.noSensorsList.setdefault(7, ConnectionService())
             self.noSensorsList.setdefault(7).connect(atributes)
-        if self.servicesList[8].get('serviceEnabled') == 1: # Falta añadir ConnectionService
+        if self.servicesList[8].get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(8)
-            atributes.setdefault('sensorsList', self.sensorsList) #Quitar
-            atributes.setdefault('noSensorsList', self.noSensorsList) #Quitar
-            atributes.setdefault('descriptionsErrors', self.readFileConf(atributes['descriptionsErrorsFile']))
-            atributes.setdefault('descriptionsWarnings', self.readFileConf(atributes['descriptionsWarningsFile']))
+            atributes.setdefault('connectionService', self.noSensorsList.setdefault(7)) # add instance ConnectionService()
+            atributes.setdefault('errorsList', self.readFileConf(atributes['descriptionsErrorsFile']))
+            atributes.setdefault('warningsLits', self.readFileConf(atributes['descriptionsWarningsFile']))
             self.noSensorsList.setdefault(8, ErrorLogService())
             self.noSensorsList.setdefault(8).connect(atributes)
         if self.servicesList[2].get('serviceEnabled') == 1:
@@ -110,15 +109,18 @@ class ManagerService(object):
             self.noSensorsList.setdefault(serviceID).connect(atributes)
 
     def addServicesList(self, serviceID, path, serviceEnabled):
-        newService = {'path': path, 'serviceEnabled':serviceEnabled}
+        newService = {'path': path, 'serviceEnabled': serviceEnabled}
         self.servicesList.setdefault(serviceID, newService)
         fileName = self.servicesList[self.serviceID].get('path')
         self.writeFileConf (fileName, self.servicesList)
 
-    def deleteServiceList(self, serviceID): # Tratar posible error que devuelba pop()
-        deleteService = self.servicesList.pop(serviceID)
-        fileName = self.servicesList[self.serviceID].get('path')
-        self.writeFileConf (fileName, self.servicesList)
+    def deleteServiceList(self, serviceID):
+	if serviceID in self.servicesList:        
+	    deleteService = self.servicesList.pop(serviceID)
+            fileName = self.servicesList[self.serviceID].get('path')
+            self.writeFileConf (fileName, self.servicesList)
+	else:
+	    self.noSensorsList.setdefault(8).regError(self.serviceID, -5) #NoService Error code
 
     def getservicesList(self):
         return self.servicesList
@@ -130,7 +132,7 @@ class ManagerService(object):
             dic = eval(f.read())
             f.close()
         except OSError:
-			self.noSensorsList.setdefault(8).regError(self.serviceID, -1) #IOError code
+	    self.noSensorsList.setdefault(8).regError(self.serviceID, -1) #OSError code
         return dic
 
     def writeFileConf(self, fileName, data):
@@ -139,7 +141,7 @@ class ManagerService(object):
             f.write(str(data))
             f.close()
         except OSError:
-	    self.noSensorsList.setdefault(8).regError(self.serviceID, -1) #IOError code
+	    self.noSensorsList.setdefault(8).regError(self.serviceID, -1) #OSError code
 
     def getAtributesConf(self, serviceID):
         fileName = self.servicesList[serviceID].get('path')
@@ -155,30 +157,36 @@ class ManagerService(object):
     def updateAtributeConf(self, serviceID, atribute, value):
         fileName = self.servicesList[serviceID].get('path')
         atributes = self.readFileConf(fileName)
-        atributes[atribute] = value
-        self.writeFileConf(fileName, atributes)
-        # Llamar al metodo del servicio correspondiente para que actualice su parametro
-        if self.servicesList[serviceID].get('serviceSensor') != 1:
-            self.noSensorsList[serviceID].updateAtribute(atribute, value)
-        elif self.servicesList[serviceID].get('serviceSensor') == 1 and self.servicesList[serviceID].get('serviceEnabled') == 1:
-            self.sensorsList[serviceID].updateAtribute(atribute, value)
-        else:# Si se solicita a un servicio que no sean los sensores o el samplingController
-            self.noSensorsList.setdefault(8).regError(self.serviceID, -8) #Incorrect Atribute Error code
+	if self.servicesList[serviceID].get('serviceEnabled') == 1:
+	    if self.servicesList[serviceID].get('serviceSensor') == 0:
+	        atributes[atribute] = value
+	        self.writeFileConf(fileName, atributes)
+	        self.noSensorsList[serviceID].updateAtribute(atribute, value)
+	    elif self.servicesList[serviceID].get('serviceSensor') == 1:
+	        atributes[atribute] = value
+	        self.writeFileConf(fileName, atributes)
+	        self.sensorsList[serviceID].updateAtribute(atribute, value)
+	    else:# Si se solicita a un servicio que no sean los sensores o el samplingController
+	        self.noSensorsList.setdefault(8).regError(self.serviceID, -8) #Incorrect Atribute Error code
+	else:# Si se solicita a un servicio que no sean los sensores o el samplingController
+	    self.noSensorsList.setdefault(8).regError(self.serviceID, -7) #Non-Active Service Error
 
-    def startService(self, serviceID): # ¿Tener en cuenta posible segunda lista de instancias para los servicios que no son sensores?
+    def startService(self, serviceID):
         if serviceID in self.servicesList:
             if 'serviceEnabled' in self.servicesList[serviceID] and self.servicesList[serviceID].get('serviceEnabled') == 0:
-                 self.servicesList[serviceID]['serviceEnabled'] = 1
-                 fileName = self.servicesList[self.serviceID].get('path')
-                 self.writeFileConf(fileName, self.servicesList)
-                 atributes = self.getAtributesConf(serviceID)
                  if self.servicesList[serviceID].get('serviceSensor') == 1:
+		     self.servicesList[serviceID]['serviceEnabled'] = 1
+                     fileName = self.servicesList[self.serviceID].get('path')
+                     self.writeFileConf(fileName, self.servicesList)
+                     atributes = self.getAtributesConf(serviceID)
                      self.wakeSensorsServices(serviceID, self.servicesList.setdefault(serviceID))
-                     self.noSensorsList.setdefault(1).updateAtribute('servicesList', self.sensorsList)#self.noSensorsList.setdefault(1).setSensorsList(self.sensorsList)
-                     #self.noSensorsList.setdefault(8).setSensorsList(self.sensorsList)
-                 elif self.servicesList[serviceID].get('serviceSensor') != 1:
+                     self.noSensorsList.setdefault(1).updateAtribute('servicesList', self.sensorsList)
+                 elif self.servicesList[serviceID].get('serviceSensor') == 0:
+		     self.servicesList[serviceID]['serviceEnabled'] = 1
+                     fileName = self.servicesList[self.serviceID].get('path')
+                     self.writeFileConf(fileName, self.servicesList)
+                     atributes = self.getAtributesConf(serviceID)
                      self.wakeServices(serviceID, self.servicesList.setdefault(serviceID))
-                     #self.noSensorsList.setdefault(8).setnoSensorsList(self.noSensorsList)
                  else:
                      self.noSensorsList.setdefault(8).regError(self.serviceID, -9) #Incorrect AtributeValue Error
             else:
@@ -189,18 +197,21 @@ class ManagerService(object):
     def stopService(self, serviceID):
         if serviceID in self.servicesList:
              if 'serviceEnabled' in self.servicesList[serviceID] and self.servicesList[serviceID].get('serviceEnabled') == 1:
-                 self.servicesList[serviceID]['serviceEnabled'] = 0
-                 fileName = self.servicesList[self.serviceID].get('path')
-                 self.writeFileConf(fileName, self.servicesList)
                  if self.servicesList[serviceID].get('serviceSensor') == 1:
+		     self.servicesList[serviceID]['serviceEnabled'] = 0
+                     fileName = self.servicesList[self.serviceID].get('path')
+                     self.writeFileConf(fileName, self.servicesList)
                      self.sensorsList[serviceID].disconnect()
                      self.sensorsList.pop(serviceID)
-                     self.noSensorsList.setdefault(1).updateAtribute('servicesList', self.sensorsList)#self.noSensorsList.setdefault(1).setSensorsList(self.sensorsList)
-                     #self.noSensorsList.setdefault(8).setSensorsList(self.sensorsList)
-                 elif self.servicesList[serviceID].get('serviceSensor') != 1:
+                     self.noSensorsList.setdefault(1).updateAtribute('servicesList', self.sensorsList)
+                 elif self.servicesList[serviceID].get('serviceSensor') == 0:
+		     self.servicesList[serviceID]['serviceEnabled'] = 0
+                     fileName = self.servicesList[self.serviceID].get('path')
+                     self.writeFileConf(fileName, self.servicesList)
                      self.noSensorsList[serviceID].disconnect()
                      self.noSensorsList.pop(serviceID)
-                     #self.noSensorsList.setdefault(8).setnoSensorsList(self.noSensorsList)
+		 else:
+                     self.noSensorsList.setdefault(8).regError(self.serviceID, -9) #Incorrect AtributeValue Error
              else:
                  self.noSensorsList.setdefault(8).regError(self.serviceID, -7) #Non-Active Service Error
         else:

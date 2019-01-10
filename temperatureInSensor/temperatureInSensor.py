@@ -15,13 +15,18 @@ class TemperatureInSensor(object):
     def confService(self, atributes):
         self.lock = atributes['lock']
         self.dht22Sensor = atributes['dht22Sensor']
-        self.samplingFrequency = atributes['samplingFrequency']
-        self.errorLogService = atributes['errorLogService']
-        self.mode = atributes['mode']
-        if not str(self.samplingFrequency).isdigit() or self.samplingFrequency < 0: #Comprobar si es un numero (isdigit) y si es negativo
-            self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
-        if not str(self.mode).isdigit() or self.mode < 0: #Comprobar si es un numero (isdigit) y si es negativo
-            self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+	self.errorLogService = atributes['errorLogService']
+	if ('mode' in atributes) and ('samplingFrequency' in atributes):
+	    if not str(atributes['samplingFrequency']).isdigit() or atributes['samplingFrequency'] < 0: #Comprobar si es un numero (isdigit) y si es negativo
+        	self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+	    else:
+		self.samplingFrequency = atributes['samplingFrequency']
+            if not str(atributes['mode']).isdigit() or atributes['mode'] < 0: #Comprobar si es un numero (isdigit) y si es negativo
+		self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+	    else:
+		self.mode = atributes['mode']
+	else:
+	    self.errorLogService.regError(self.serviceID, -2) #ConfFile Error
 
     def start(self):
         atributes = dict()

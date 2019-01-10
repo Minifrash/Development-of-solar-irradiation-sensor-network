@@ -30,7 +30,7 @@ class ConnectionService(object):
     	self.conexion = socket.socket(socket.AF_LORA, socket.SOCK_RAW) # create a LoRa socket
     	self.conexion.setsockopt(socket.SOL_LORA, socket.SO_DR, 5) # set the LoRaWAN data rate
 
-    def updateAtribute(self, atribute, newValue):
+    def updateAtribute(self, atribute, newValue): #QUITAR El else no puede enviar error porque no dispone de la instancia necesaria
         if atribute == 'euiGateway':
             self.euiGateway = newValue
         elif atribute == 'keyGateway':
@@ -52,7 +52,7 @@ class ConnectionService(object):
 
     def sendPackage(self, typePackage, data):
         dataSend = ''
-        if typePackage == 'sample': # Mensaje de muestras
+	if typePackage == 'sample': # Mensaje de muestras
             dataSend = self.samplePackage(data)
         elif typePackage == 'location': # Mensaje de muestras
             dataSend = self.locationPackage(data)
@@ -65,7 +65,7 @@ class ConnectionService(object):
 	elif typePackage == 'errorWarning': # Mensaje de error
             dataSend = self.errorWarningPackage(data)
 	else:
-	    print("FALLOOOO")
+	    print("FALLOOOO")# Quitar
         self.send(dataSend)
 
     def send(self, dataSend):
@@ -197,4 +197,6 @@ class ConnectionService(object):
         dataSend += '5' # Type of package 5 = errorWarning
     	dataSend += ' '
     	dataSend += data.get('description') # DescriptionError
+	dataSend += ' '
+    	dataSend += str(data.get('counter')) # Counter of Error
         return dataSend
