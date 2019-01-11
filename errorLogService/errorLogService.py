@@ -1,5 +1,5 @@
 from machine import RTC
-
+import _thread
 class ErrorLogService(object):
 
     def __init__(self):
@@ -13,9 +13,11 @@ class ErrorLogService(object):
         self.descriptionsWarnings = dict()
 	self.errorsCounter = dict()
 	self.warningsCounter = dict()
+	self.lock = 0
 
     def confService(self, atributes):
 	self.connectionService = atributes['connectionService']
+	self.lock = atributes['lock']
         self.rtc = RTC()
 	if ('errorFile' in atributes) and ('warningFile' in atributes) and ('errorsList' in atributes) and ('warningsLits' in atributes):
 	    if str(atributes['errorFile']).isdigit(): #Error si es un numero
@@ -88,10 +90,12 @@ class ErrorLogService(object):
 		description = self.descriptionsWarnings[error].get('description') #self.descriptionsWarnings.setdefault(error) 
 		counter = self.counterCheck(serviceID, error, description, dataSend) #Comprobación de contador
 		#self.updateFile(self.namesFiles.get('warningFile'))
+		#self.lock.acquire()
 		#fileWarning = open(self.namesFiles.get('warningFile'), "a")
 		#prueba = time + " " + str(serviceID) + " " + description + " " + str(counter) + "\n"
 		#fileWarning.write(prueba)
 		#fileWarning.close()
+		#self.lock.release()
 
     def counterCheck(self, serviceID, error, description, dataSend):
 	if serviceID not in self.warningLog:
@@ -118,6 +122,7 @@ class ErrorLogService(object):
 	return counter
 
     def updateFile(self, fileName):
+	#self.lock.acquire()
 	f = open(fileName, "r")
 	lines = f.readlines()
 	f.close()
@@ -128,6 +133,7 @@ class ErrorLogService(object):
 		fileaux.write(lines[i])
 		i += 1
 	    fileaux.close()
+	#self.lock.release()
 
     #def notifyToServer(self, dataSend):
         #self.connectionService.sendPackage('errorWarning', dataSend)

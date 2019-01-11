@@ -51,6 +51,7 @@ class ManagerService(object):
             self.noSensorsList.setdefault(7).connect(atributes)
         if self.servicesList[8].get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(8)
+	    atributes.setdefault('lock', self.lock)
             atributes.setdefault('connectionService', self.noSensorsList.setdefault(7)) # add instance ConnectionService()
             atributes.setdefault('errorsList', self.readFileConf(atributes['descriptionsErrorsFile']))
             atributes.setdefault('warningsLits', self.readFileConf(atributes['descriptionsWarningsFile']))
@@ -103,6 +104,7 @@ class ManagerService(object):
         if serviceID == 1 and value.get('serviceEnabled') == 1:
             atributes = self.getAtributesConf(serviceID)
             atributes.setdefault('sensorsList', self.sensorsList)
+	    atributes.setdefault('lock', self.lock) # REVISAR
             atributes.setdefault('connectionService', self.noSensorsList.setdefault(7))
             atributes.setdefault('errorLogService', self.noSensorsList.setdefault(8))
             self.noSensorsList.setdefault(serviceID, SamplingService())

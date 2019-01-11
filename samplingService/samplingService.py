@@ -16,11 +16,14 @@ class SamplingService(object):
         self.wakeTimeSeconds = 0
         self.Battery = 0
         self.errorLogService = 0
+	self.lock = 0
+	self.primeravez = True
 
     def confService(self, atributes):
         self.connectionService = atributes['connectionService']
 	self.errorLogService = atributes['errorLogService']
 	self.sensorsList = atributes['sensorsList']
+	self.lock = atributes['lock']
 	self.rtc = RTC()
 	if ('sendingFrequency' in atributes) and ('sleepTime' in atributes) and ('wakeTime' in atributes):
 	    if not str(atributes['sendingFrequency']).isdigit() or atributes['sendingFrequency'] < 0: #Comprobar si es un numero (isdigit) y si es negativo
@@ -67,7 +70,7 @@ class SamplingService(object):
 
     def sendData(self):
         collectMemory()
-        showMemory()
+        #showMemory()
      	i = 0
         chrono = Timer.Chrono()
         timeChrono = 0
@@ -81,19 +84,19 @@ class SamplingService(object):
             dataSend.setdefault('minute', self.rtc.now()[4])
             dataSend.setdefault('seconds', self.rtc.now()[5])
 	    #chrono.start()
-            print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
+            #print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
             for sensor, valor in self.sensorsList.items():
             	sample = valor.getData()
             	dataSend.setdefault(sensor, sample)
-            	print(str(sensor) + " : " + str(sample))
+            	#print(str(sensor) + " : " + str(sample))
             collectMemory()
-            showMemory()
+            #showMemory()
             dataSend.setdefault('Batt', self.Battery.getData())
             self.connectionService.sendPackage('sample', dataSend)
             del dataSend
             collectMemory()
             i += 1
-            self.sleep()
+            self.sleep()#self.sleepPrueba1()
             chrono.stop()
             timeChrono = chrono.read()
             chrono.reset()
@@ -112,23 +115,42 @@ class SamplingService(object):
 
     def sleepPrueba1(self): # REPASAR
         timeToSleep = 0
-        seconds = self.nowTimeInSeconds()
-        if seconds < self.wakeTimeSeconds and seconds >= self.sleepTimeSeconds:
-            timeToSleep = self.wakeTimeSeconds - seconds
-            #print('Duermo:' + str(timeToSleep))
-            if timeToSleep >= 0:
-                deepsleep(timeToSleep*1000)
-        if seconds > self.wakeTimeSeconds and seconds >= self.sleepTimeSeconds:
-            if self.wakeTimeSeconds < self.sleepTimeSeconds:
-                timeToSleep =  (86400 - seconds) + self.wakeTimeSeconds
-            else:
-                timeToSleep = self.wakeTimeSeconds - seconds
-            #print('Duermo:' + str(timeToSleep))
-            if timeToSleep >= 0:
-                deepsleep(timeToSleep*1000)
+	aux2 = 0
+	if self.primeravez == True:
+	    self.lock.acquire()
+	    aux = open('./samplingService/time.txt', "r")
+	    aux2 = eval(aux.readline())
+	    aux.close()
+	    self.lock.release()
+	    self.primeravez = False
+	if aux2 > 0:
+	    timeToSleep = aux2 - self.nowTimeInSeconds()
+	    self.lock.acquire()
+	    aux = open('./samplingService/time.txt', "w")
+	    aux.write(str(0))
+	    print('Duermo Siesta:' + str(timeToSleep))
+	    self.lock.release()
+	    deepsleep(timeToSleep*1000)
+	if aux2 == 0:
+	    seconds = self.nowTimeInSeconds()
+	    if seconds >= self.sleepTimeSeconds:
+	        if self.wakeTimeSeconds < self.sleepTimeSeconds:
+		    timeToSleep =  (86400 - seconds) + self.wakeTimeSeconds
+	        else:
+		    timeToSleep = self.wakeTimeSeconds - seconds
+	        print('Duermo:' + str(timeToSleep))
+	        if timeToSleep >= 0:
+		    self.lock.acquire()
+		    aux = open('./samplingService/time.txt', "w")
+		    aux.write(str(time.time()+timeToSleep))
+		    aux.close()
+		    self.lock.release()
+		    deepsleep(timeToSleep*1000)
+	
 
     def sleep(self):
         timeToSleep = 0
+	print(time.time())
         seconds = self.nowTimeInSeconds()
         if seconds >= self.sleepTimeSeconds:
             if self.wakeTimeSeconds < self.sleepTimeSeconds:

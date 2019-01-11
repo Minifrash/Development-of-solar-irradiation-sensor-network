@@ -63,6 +63,7 @@ class IrradiationSensor(object):
                     time.sleep(0.002)
                     self.lastRadiation = self.panel.voltage()
                     count += 1
+		#self.lastRadiation = 0
                 if (self.lastRadiation < 1.0 or self.lastRadiation > 10000.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
                     self.errorLogService.regError(self.serviceID, -11) #Incorrect Value Error code
                 else:

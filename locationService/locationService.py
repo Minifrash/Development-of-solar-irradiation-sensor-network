@@ -81,7 +81,7 @@ class LocationService(object):
                     self.connectionService.sendPackage('location', data)
                     collectMemory()
                     if self.sampleThread != 0:
-                        print("MATO HILO")
+                        #print("MATO HILO")
                         _thread.exit()
                 except:
                     if self.sincro == False: # por que salta una excepcion al matar el hilo
@@ -90,7 +90,7 @@ class LocationService(object):
                         #data.setdefault('minute', self.rtc.now()[4])
                         #data.setdefault('seconds', self.rtc.now()[5])
                     	#self.connectionService.sendPackage('noSincroGPS', data)
-                        print('Fallo GPS')
+                        #print('Fallo GPS')
                     	time.sleep(self.frequency)
                 collectMemory()
 
