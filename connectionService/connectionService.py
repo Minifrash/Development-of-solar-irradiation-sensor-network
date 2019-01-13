@@ -34,7 +34,7 @@ class ConnectionService(object):
         if atribute == 'euiGateway':
             self.euiGateway = newValue
         elif atribute == 'keyGateway':
-	    self.keyGateway = newValue
+            self.keyGateway = newValue
         else:
             self.errorLog.regError(self.serviceID, -8) #Incorrect Atribute Error code
 
@@ -44,28 +44,26 @@ class ConnectionService(object):
         self.enabled = True
 
     def disconnect(self):
-	self.enabled = False
-	self.sendPackage('disconnect', '')
+        self.enabled = False
+        self.sendPackage('disconnect', '')
 
     def serviceEnabled(self):
         return self.enabled
 
     def sendPackage(self, typePackage, data):
         dataSend = ''
-	if typePackage == 'sample': # Mensaje de muestras
+        if typePackage == 'sample': # Mensaje de muestras
             dataSend = self.samplePackage(data)
-        elif typePackage == 'location': # Mensaje de muestras
+        if typePackage == 'location': # Mensaje de muestras
             dataSend = self.locationPackage(data)
-        elif typePackage == 'time': # Mensaje de muestras
+        if typePackage == 'time': # Mensaje de muestras
             dataSend = self.timePackage(data)
-        elif typePackage == 'connect': # Mensaje para darse de anta en thingsboards
+        if typePackage == 'connect': # Mensaje para darse de anta en thingsboards
             dataSend = self.connectPackage(data)
-        elif typePackage == 'disconnect': # Mensaje para darse de baja en thingsboards
+        if typePackage == 'disconnect': # Mensaje para darse de baja en thingsboards
             dataSend = self.disconnectPackage(data)
-	elif typePackage == 'errorWarning': # Mensaje de error
+        if typePackage == 'errorWarning': # Mensaje de error
             dataSend = self.errorWarningPackage(data)
-	else:
-	    print("FALLOOOO")# Quitar
         self.send(dataSend)
 
     def send(self, dataSend):
@@ -197,6 +195,6 @@ class ConnectionService(object):
         dataSend += '5' # Type of package 5 = errorWarning
     	dataSend += ' '
     	dataSend += data.get('description') # DescriptionError
-	dataSend += ' '
+        dataSend += ' '
     	dataSend += str(data.get('counter')) # Counter of Error
         return dataSend

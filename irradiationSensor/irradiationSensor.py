@@ -21,7 +21,7 @@ class IrradiationSensor(object):
         self.lock = 0
         self.errorLogService = 0
         self.erCounter = 3
-	
+
     def confService(self, atributes):
         self.powerPin = Pin('P8', mode=Pin.OUT)
         self.adc = ADC()
@@ -29,19 +29,19 @@ class IrradiationSensor(object):
         self.vBiasDAC = DAC('P22')
         self.vBiasDAC.write(0.135) # approximately 0.5 V
         self.panel = self.adc.channel(pin='P13', attn = ADC.ATTN_11DB)
-	self.errorLogService = atributes['errorLogService']
+        self.errorLogService = atributes['errorLogService']
         self.lock = atributes['lock']
-	if ('mode' in atributes) and ('samplingFrequency' in atributes):
-	    if not str(atributes['samplingFrequency']).isdigit() or atributes['samplingFrequency'] < 0: #Comprobar si es un numero (isdigit) y si es negativo
-        	self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
-	    else:
-		self.samplingFrequency = atributes['samplingFrequency']
+        if ('mode' in atributes) and ('samplingFrequency' in atributes):
+            if not str(atributes['samplingFrequency']).isdigit() or atributes['samplingFrequency'] < 0: #Comprobar si es un numero (isdigit) y si es negativo
+                self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+            else:
+                self.samplingFrequency = atributes['samplingFrequency']
             if not str(atributes['mode']).isdigit() or atributes['mode'] < 0: #Comprobar si es un numero (isdigit) y si es negativo
-		self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
-	    else:
-		self.mode = atributes['mode']
-	else:
-	    self.errorLogService.regError(self.serviceID, -2) #ConfFile Error
+                self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+            else:
+                self.mode = atributes['mode']
+        else:
+            self.errorLogService.regError(self.serviceID, -2) #ConfFile Error
 
     def start(self):
         try:
@@ -63,7 +63,6 @@ class IrradiationSensor(object):
                     time.sleep(0.002)
                     self.lastRadiation = self.panel.voltage()
                     count += 1
-		#self.lastRadiation = 0
                 if (self.lastRadiation < 1.0 or self.lastRadiation > 10000.0): #Si a la salida del bucle sigue siendo una mala muestra, se pasa a self.error
                     self.errorLogService.regError(self.serviceID, -11) #Incorrect Value Error code
                 else:

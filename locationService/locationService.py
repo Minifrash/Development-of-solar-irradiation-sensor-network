@@ -24,28 +24,28 @@ class LocationService(object):
         self.connectionService = 0
         self.sincro = False
         self.sampleThread = 0
-	self.errorLogService = 0
+        self.errorLogService = 0
 
     def confService(self, atributes):
         self.connectionService = atributes['connectionService']
-	self.errorLogService = atributes['errorLogService']
+        self.errorLogService = atributes['errorLogService']
         self.uart = UART(1)
         self.ubx = ubx7(self.uart) # UBX7 device declaration
         self.cmd = ubx7msg() # commands to be sent to the ubx device
         self.res = ubx7msg() # responses to be received from the ubx device
         self.ack = ubx7msg() #   ack (or nak) to be received from the ubx device
         self.rtc = RTC()
-	if ('mode' in atributes) and ('frequency' in atributes):
-	    if not str(atributes['frequency']).isdigit() or atributes['frequency'] < 0: #Comprobar si es un numero (isdigit) y si es negativo
-        	self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
-	    else:
-		self.frequency = atributes['frequency']
+        if ('mode' in atributes) and ('frequency' in atributes):
+            if not str(atributes['frequency']).isdigit() or atributes['frequency'] < 0: #Comprobar si es un numero (isdigit) y si es negativo
+                self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+            else:
+                self.frequency = atributes['frequency']
             if not str(atributes['mode']).isdigit() or atributes['mode'] < 0: #Comprobar si es un numero (isdigit) y si es negativo
-		self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
-	    else:
-		self.mode = atributes['mode']
-	else:
-	    self.errorLogService.regError(self.serviceID, -2) #ConfFile Error
+                self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+            else:
+                self.mode = atributes['mode']
+        else:
+            self.errorLogService.regError(self.serviceID, -2) #ConfFile Error
 
     def start(self): # Tener un timeout o una manera de comprobar si hay un error y inizializar el rtc de otra forma y dar una posicion fija
         self.sampleThread = _thread.start_new_thread(self.sincroGPS, ())
@@ -53,7 +53,7 @@ class LocationService(object):
     def updateAtribute(self, atribute, newValue): # No tiene errorLogService
         if atribute == 'mode':
             self.mode = newValue
-	elif atribute == 'frequency':
+        elif atribute == 'frequency':
             self.frequency = newValue
         else:
             self.errorLogService.regError(self.serviceID, -8) #Incorrect Atribute Error code

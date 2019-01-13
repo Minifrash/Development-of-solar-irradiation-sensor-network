@@ -16,33 +16,34 @@ class SamplingService(object):
         self.wakeTimeSeconds = 0
         self.Battery = 0
         self.errorLogService = 0
-	self.lock = 0
-	self.primeravez = True
+        self.lock = 0
+        self.timeStamp = 0
 
     def confService(self, atributes):
         self.connectionService = atributes['connectionService']
-	self.errorLogService = atributes['errorLogService']
-	self.sensorsList = atributes['sensorsList']
-	self.lock = atributes['lock']
-	self.rtc = RTC()
-	if ('sendingFrequency' in atributes) and ('sleepTime' in atributes) and ('wakeTime' in atributes):
-	    if not str(atributes['sendingFrequency']).isdigit() or atributes['sendingFrequency'] < 0: #Comprobar si es un numero (isdigit) y si es negativo
-        	self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
-	    else:
-		self.sendingFrequency = atributes['sendingFrequency']
-	    if not str(atributes['sleepTime']).isdigit() and self.checkValidTime(atributes['sleepTime']) == True:
+        self.errorLogService = atributes['errorLogService']
+        self.sensorsList = atributes['sensorsList']
+        self.lock = atributes['lock']
+        self.rtc = RTC()
+        if ('sendingFrequency' in atributes) and ('sleepTime' in atributes) and ('wakeTime' in atributes):
+            if not str(atributes['sendingFrequency']).isdigit() or atributes['sendingFrequency'] < 0: #Comprobar si es un numero (isdigit) y si es negativo
+                self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+            else:
+                self.sendingFrequency = atributes['sendingFrequency']
+            if not str(atributes['sleepTime']).isdigit() and self.checkValidTime(atributes['sleepTime']) == True:
                 self.sleepTimeSeconds = self.conversionTime(atributes['sleepTime'])
             else:
-		self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
-	    if not str(atributes['wakeTime']).isdigit() and self.checkValidTime(atributes['wakeTime']) == True:
-		self.wakeTimeSeconds = self.conversionTime(atributes['wakeTime'])
-		self.timeInit(atributes['wakeTime'])
-	    else:
-		self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
-	else:
-	    self.errorLogService.regError(self.serviceID, -2) #ConfFile Error
+                self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+            if not str(atributes['wakeTime']).isdigit() and self.checkValidTime(atributes['wakeTime']) == True:
+                self.wakeTimeSeconds = self.conversionTime(atributes['wakeTime'])
+                self.timeInit(atributes['wakeTime'])
+            else:
+                self.errorLogService.regError(self.serviceID, -9) #Incorrect AtributeValue Error
+        else:
+            self.errorLogService.regError(self.serviceID, -2) #ConfFile Error
         self.Battery = BatteryService() # Quitar
         self.Battery.connect() # Quitar
+        self.checkSleep() # Prueba
 
     def start(self):
         self.sendData()
@@ -70,37 +71,37 @@ class SamplingService(object):
 
     def sendData(self):
         collectMemory()
-        #showMemory()
-     	i = 0
-        chrono = Timer.Chrono()
-        timeChrono = 0
+        showMemory() #Quitar
+     	i = 0 #Quitar
+        chrono = Timer.Chrono() #Quitar
+        timeChrono = 0 #Quitar
         while self.enabled == True:
-            chrono.start()
+            #chrono.start() #Quitar
             dataSend = dict()
-            #if (self.sendingFrequency - timeChrono) > 0:
-            #	time.sleep(self.sendingFrequency-timeChrono)
+            #if (self.sendingFrequency - timeChrono) > 0: #Quitar
+            #	time.sleep(self.sendingFrequency-timeChrono) #Quitar
             time.sleep(self.sendingFrequency)
             dataSend.setdefault('hour', self.rtc.now()[3])
             dataSend.setdefault('minute', self.rtc.now()[4])
             dataSend.setdefault('seconds', self.rtc.now()[5])
-	    #chrono.start()
-            #print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------")
+            #chrono.start() #Quitar
+            print("-----------------------------------------------------------Iteracion numero = " + str(i) + "---------------------------------------------------------------") #Quitar
             for sensor, valor in self.sensorsList.items():
             	sample = valor.getData()
             	dataSend.setdefault(sensor, sample)
-            	#print(str(sensor) + " : " + str(sample))
+            	print(str(sensor) + " : " + str(sample))
             collectMemory()
-            #showMemory()
-            dataSend.setdefault('Batt', self.Battery.getData())
-            self.connectionService.sendPackage('sample', dataSend)
+            showMemory()
+            dataSend.setdefault('Batt', self.Battery.getData()) #Quitar
+            self.connectionService.sendPackage('sample', dataSend) #Quitar
             del dataSend
             collectMemory()
-            i += 1
-            self.sleep()#self.sleepPrueba1()
-            chrono.stop()
-            timeChrono = chrono.read()
-            chrono.reset()
-            #print(timeChrono)
+            i += 1 #Quitar
+            self.sleepPrueba1()#self.sleep()
+            #chrono.stop() #Quitar
+            #timeChrono = chrono.read() #Quitar
+            #chrono.reset() #Quitar
+            #print(timeChrono) #Quitar
 
     def connect(self, atributes):
         self.enabled = True
@@ -113,44 +114,47 @@ class SamplingService(object):
     def serviceEnabled(self):
         return self.enabled
 
+    def checkSleep(self):
+        self.lock.acquire()
+        fichero = open('./samplingService/time.txt', "r")
+        self.timeStamp = eval(fichero.readline())
+        fichero.write(str(0))
+        fichero.close()
+        self.lock.release()
+
     def sleepPrueba1(self): # REPASAR
-        timeToSleep = 0
-	aux2 = 0
-	if self.primeravez == True:
-	    self.lock.acquire()
-	    aux = open('./samplingService/time.txt', "r")
-	    aux2 = eval(aux.readline())
-	    aux.close()
-	    self.lock.release()
-	    self.primeravez = False
-	if aux2 > 0:
-	    timeToSleep = aux2 - self.nowTimeInSeconds()
-	    self.lock.acquire()
-	    aux = open('./samplingService/time.txt', "w")
-	    aux.write(str(0))
-	    print('Duermo Siesta:' + str(timeToSleep))
-	    self.lock.release()
-	    deepsleep(timeToSleep*1000)
-	if aux2 == 0:
-	    seconds = self.nowTimeInSeconds()
-	    if seconds >= self.sleepTimeSeconds:
-	        if self.wakeTimeSeconds < self.sleepTimeSeconds:
-		    timeToSleep =  (86400 - seconds) + self.wakeTimeSeconds
-	        else:
-		    timeToSleep = self.wakeTimeSeconds - seconds
-	        print('Duermo:' + str(timeToSleep))
-	        if timeToSleep >= 0:
-		    self.lock.acquire()
-		    aux = open('./samplingService/time.txt', "w")
-		    aux.write(str(time.time()+timeToSleep))
-		    aux.close()
-		    self.lock.release()
-		    deepsleep(timeToSleep*1000)
-	
+        secondsNow = self.nowTimeInSeconds()
+        if self.timeStamp > 0 and self.rtc.now()[0] != 1970: # ¿Tener encuenta tambien la hora del sistema?
+            timeToSleep = self.timeStamp - secondsNow
+            if timeToSleep >= 0:
+                self.lock.acquire()
+                fichero = open('./samplingService/time.txt', "w")
+                fichero.write(str(time.time()+timeToSleep))
+                fichero.close()
+                self.lock.release()
+                print('Duermo Siesta:' + str(timeToSleep))
+                deepsleep(timeToSleep*1000)
+            else:
+                self.timeStamp = 0
+        if self.timeStamp == 0:
+            if secondsNow >= self.sleepTimeSeconds:
+                if self.wakeTimeSeconds < self.sleepTimeSeconds:
+                    timeToSleep =  (86400 - secondsNow) + self.wakeTimeSeconds
+                else:
+                    timeToSleep = self.wakeTimeSeconds - secondsNow
+                if timeToSleep >= 0:
+                    self.lock.acquire()
+                    fichero = open('./samplingService/time.txt', "w")
+                    fichero.write(str(time.time()+timeToSleep))
+                    fichero.close()
+                    self.lock.release()
+                    print('Duermo:' + str(timeToSleep))
+                    deepsleep(timeToSleep*1000)
+
 
     def sleep(self):
         timeToSleep = 0
-	print(time.time())
+        print(time.time())
         seconds = self.nowTimeInSeconds()
         if seconds >= self.sleepTimeSeconds:
             if self.wakeTimeSeconds < self.sleepTimeSeconds:
@@ -177,23 +181,21 @@ class SamplingService(object):
     def checkValidTime(self, timeData):
         validTime = True
         auxTime = timeData.split(':')
-	if len(auxTime) == 3:
+        if len(auxTime) == 3:
             if not str(eval(auxTime[0])).isdigit() or (eval(auxTime[0]) < 00) or (eval(auxTime[0]) > 24):
-            	validTime = False
+                validTime = False
             if not str(eval(auxTime[1])).isdigit() or (eval(auxTime[1]) < 00) or (eval(auxTime[1]) > 60):
             	validTime = False
             if not str(eval(auxTime[2])).isdigit() or (eval(auxTime[2]) < 00) or (eval(auxTime[2]) > 60):
-           	validTime = False
-	else:
-	    validTime = False
+                validTime = False
+            else:
+                validTime = False
         return validTime
 
     def timeInit(self, wakeTime):
-	if self.rtc.now()[0] == 1970:
-	    auxTime = wakeTime.split(':')
-	    hora = eval(auxTime[0])
-	    minutos = eval(auxTime[1])
-	    seconds = eval(auxTime[2])
-	    self.rtc.init((1970, 1, 1, hora, minutos, seconds)) #hour(GMT+1), min, sec
-
-
+        if self.rtc.now()[0] == 1970:
+            auxTime = wakeTime.split(':')
+            hora = eval(auxTime[0])
+            minutos = eval(auxTime[1])
+            seconds = eval(auxTime[2])
+            self.rtc.init((1970, 1, 1, hora, minutos, seconds)) #hour(GMT+1), min, sec
