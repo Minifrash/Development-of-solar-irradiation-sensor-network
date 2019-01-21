@@ -1,0 +1,1 @@
+{'serviceID': 8, 'errorFile': './errorLogService/errors.txt', 'warningFile': './errorLogService/warnings.txt', 'descriptionsErrorsFile': './errorLogService/descriptionsErrors.txt', 'descriptionsWarningsFile': './errorLogService/descriptionsWarnings.txt'}

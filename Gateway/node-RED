@@ -1,0 +1,262 @@
+[
+    {
+        "id": "75a4c83e.e8eeb8",
+        "type": "mqtt out",
+        "z": "dd6a1275.771948",
+        "name": "telemetry",
+        "topic": "v1/gateway/telemetry",
+        "qos": "0",
+        "retain": "",
+        "broker": "90eeb486.49804",
+        "x": 1024.611083984375,
+        "y": 1482,
+        "wires": []
+    },
+    {
+        "id": "ee91a2ae.7572c",
+        "type": "function",
+        "z": "dd6a1275.771948",
+        "name": "TypeMSG",
+        "func": "var words = msg.payload.split(\" \");\nmsg.typeMSG = words[3];\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 445.1111145019531,
+        "y": 1637,
+        "wires": [
+            [
+                "191ff5f2.e0add2"
+            ]
+        ]
+    },
+    {
+        "id": "191ff5f2.e0add2",
+        "type": "switch",
+        "z": "dd6a1275.771948",
+        "name": "",
+        "property": "typeMSG",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "2",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "3",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "4",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "5",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "outputs": 6,
+        "x": 602.111083984375,
+        "y": 1637,
+        "wires": [
+            [
+                "a140d2b3.66e8d"
+            ],
+            [
+                "8da93bf0.42cb3"
+            ],
+            [
+                "ff72d978.de54f8"
+            ],
+            [
+                "e1e69eb6.31626"
+            ],
+            [
+                "9ed75a42.b5c27"
+            ],
+            [
+                "3e4872fa.6c465e"
+            ]
+        ]
+    },
+    {
+        "id": "a140d2b3.66e8d",
+        "type": "function",
+        "z": "dd6a1275.771948",
+        "name": "sample",
+        "func": "var words = msg.payload.split(\" \");\nvar size = words.length;\nvar i = 8;\nvar dataPublish = '{ \"' + msg.eui + '\": '+'[ { \"ts\": ';\nvar date = new Date();\ndate.setHours(0, 0, 0, 0);\nvar dateMsec = date.getTime();\nvar ts = (((words[0]*3600) + (words[1]*60) + (words[2]*1))* 1000) + dateMsec;\ndataPublish += ts;\ndataPublish += ', \"values\": {';\nif (words[4] == 1){\n\tdataPublish += '\"radiacion\": ';\n\tdataPublish += words[i];\n\ti++;\n\tif (i < size)\n\t    dataPublish += ', ';\n\telse\n\t\tdataPublish += ' } } ] }';\n}\nif (words[5] == 1){\n\tdataPublish += '\"temperaturaInterna\": ';\n\tdataPublish += words[i];\n\ti++;\n\tif (i < size)\n\t    dataPublish += ', ';\n\telse\n\t\tdataPublish += ' } } ] }';\n}\nif (words[6] == 1){\n\tdataPublish += '\"humedad\": ';\n\tdataPublish += words[i];\n\ti++;\n\tif (i < size)\n\t    dataPublish += ', ';\n\telse\n\t\tdataPublish += ' } } ] }';\n}\nif (words[7] == 1){\n\tdataPublish += '\"temperaturaExterna\": ';\n\tdataPublish += words[i];\n\ti++;\n\tif (i < size)\n\t    dataPublish += ', ';\n\telse\n\t\tdataPublish += ' } } ] }';\n}\nmsg.payload = dataPublish;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 815.1111111111111,
+        "y": 1484,
+        "wires": [
+            [
+                "75a4c83e.e8eeb8"
+            ]
+        ]
+    },
+    {
+        "id": "8da93bf0.42cb3",
+        "type": "function",
+        "z": "dd6a1275.771948",
+        "name": "location",
+        "func": "var words = msg.payload.split(\" \");\nvar dataPublish = '{ \"' + msg.eui + '\": '+'{ \"longitude\": ';\ndataPublish += words[4]/10000000;\ndataPublish += ', \"latitude\": ';\ndataPublish += words[5]/10000000;\ndataPublish += ', \"height\": ';\ndataPublish += words[6];\ndataPublish += ' } }';\nmsg.payload = dataPublish;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 801.1111111111111,
+        "y": 1539,
+        "wires": [
+            [
+                "75b2f553.69611c"
+            ]
+        ]
+    },
+    {
+        "id": "75b2f553.69611c",
+        "type": "mqtt out",
+        "z": "dd6a1275.771948",
+        "name": "attributes",
+        "topic": "v1/gateway/attributes",
+        "qos": "0",
+        "retain": "",
+        "broker": "90eeb486.49804",
+        "x": 1027.111083984375,
+        "y": 1585,
+        "wires": []
+    },
+    {
+        "id": "ff72d978.de54f8",
+        "type": "function",
+        "z": "dd6a1275.771948",
+        "name": "time",
+        "func": "var words = msg.payload.split(\" \");\nvar dataPublish = '{ \"' + msg.eui + '\": '+'{ \"hora\": ';\ndataPublish += words[4];\ndataPublish += ', \"minutos\": ';\ndataPublish += words[5];\ndataPublish += ', \"segundos\": ';\ndataPublish += words[6];\ndataPublish += ' } }';\nmsg.payload = dataPublish;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 799.1111111111111,
+        "y": 1590,
+        "wires": [
+            [
+                "75b2f553.69611c"
+            ]
+        ]
+    },
+    {
+        "id": "e1e69eb6.31626",
+        "type": "function",
+        "z": "dd6a1275.771948",
+        "name": "connect",
+        "func": "var dataPublish = '{ \"device\": \"' + msg.eui + '\" }';\nmsg.payload = dataPublish;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 802.1111111111111,
+        "y": 1724,
+        "wires": [
+            [
+                "a5440055.17bb2"
+            ]
+        ]
+    },
+    {
+        "id": "a5440055.17bb2",
+        "type": "mqtt out",
+        "z": "dd6a1275.771948",
+        "name": "connect",
+        "topic": "v1/gateway/connect",
+        "qos": "0",
+        "retain": "",
+        "broker": "90eeb486.49804",
+        "x": 1025.111083984375,
+        "y": 1725,
+        "wires": []
+    },
+    {
+        "id": "9ed75a42.b5c27",
+        "type": "function",
+        "z": "dd6a1275.771948",
+        "name": "disconnect",
+        "func": "var dataPublish = '{ \"device\": \"' + msg.eui + '\" }';\nmsg.payload = dataPublish;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 811.1111111111111,
+        "y": 1804,
+        "wires": [
+            [
+                "1140fedc.708721"
+            ]
+        ]
+    },
+    {
+        "id": "1140fedc.708721",
+        "type": "mqtt out",
+        "z": "dd6a1275.771948",
+        "name": "disconnect",
+        "topic": "v1/gateway/disconnect",
+        "qos": "0",
+        "retain": "",
+        "broker": "90eeb486.49804",
+        "x": 1034.111083984375,
+        "y": 1804,
+        "wires": []
+    },
+    {
+        "id": "6aa5ca6c.1beb3c",
+        "type": "lora in",
+        "z": "dd6a1275.771948",
+        "name": "",
+        "datatype": "utf8",
+        "x": 299,
+        "y": 1636.3333740234375,
+        "wires": [
+            [
+                "ee91a2ae.7572c"
+            ]
+        ]
+    },
+    {
+        "id": "3e4872fa.6c465e",
+        "type": "function",
+        "z": "dd6a1275.771948",
+        "name": "errorWarning",
+        "func": "var words = msg.payload.split(\" \");\nvar dataPublish = '{ \"' + msg.eui + '\": '+'{ \"' + words[4] + '\": ';\ndataPublish += words[5];\ndataPublish += ' } }';\nmsg.payload = dataPublish;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 814.3890041775173,
+        "y": 1658.2222290039062,
+        "wires": [
+            [
+                "75b2f553.69611c"
+            ]
+        ]
+    },
+    {
+        "id": "90eeb486.49804",
+        "type": "mqtt-broker",
+        "z": "",
+        "broker": "solarcasting.dacya.ucm.es",
+        "port": "1883",
+        "clientid": "simularGatewaty",
+        "usetls": false,
+        "compatmode": true,
+        "keepalive": "60",
+        "cleansession": true,
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": ""
+    }
+]
