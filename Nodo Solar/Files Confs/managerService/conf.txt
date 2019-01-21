@@ -1,0 +1,9 @@
+{0: {'path': './managerService/conf.txt', 'serviceEnabled': 1, 'serviceSensor': 0},
+1: {'path': './samplingService/conf.txt', 'serviceEnabled': 1, 'serviceSensor': 0},
+2: {'path': './locationService/conf.txt', 'serviceEnabled': 1, 'serviceSensor': 0},
+3: {'path': './irradiationSensor/conf.txt', 'serviceEnabled': 1, 'serviceSensor': 1},
+4: {'path': './temperatureInSensor/conf.txt', 'serviceEnabled': 1, 'serviceSensor': 1},
+5: {'path': './humiditySensor/conf.txt', 'serviceEnabled': 1, 'serviceSensor': 1},
+6: {'path': './temperatureOutSensor/conf.txt', 'serviceEnabled': 1, 'serviceSensor': 1},
+7: {'path': './connectionService/conf.txt', 'serviceEnabled': 1, 'serviceSensor': 0},
+8: {'path': './errorLogService/conf.txt', 'serviceEnabled': 1, 'serviceSensor': 0}}

@@ -1,0 +1,1 @@
+{'serviceID': 7, 'euiGateway': 'ada4dae3ac12676b', 'keyGateway': '11b0282a189b75b0b4d2d8c7fa38548b'}

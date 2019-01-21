@@ -1,0 +1,1 @@
+{'serviceID': 1, 'sendingFrequency': 5, 'sleepTime': '17:00:00', 'wakeTime': '09:00:00'}
