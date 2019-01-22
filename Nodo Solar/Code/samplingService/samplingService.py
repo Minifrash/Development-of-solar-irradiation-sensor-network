@@ -67,9 +67,12 @@ class SamplingService(object):
 
     def sendData(self):
         collectMemory()
+	chrono = Timer.Chrono()
+	timeChrono = 0
         while self.enabled == True:
             dataSend = dict()
-            time.sleep(self.sendingFrequency)
+	    if (self.sendingFrequency - timeChrono) > 0:
+		time.sleep(self.sendingFrequency - timeChrono)
             dataSend.setdefault('hour', self.rtc.now()[3])
             dataSend.setdefault('minute', self.rtc.now()[4])
             dataSend.setdefault('seconds', self.rtc.now()[5])
@@ -77,7 +80,11 @@ class SamplingService(object):
             	sample = valor.getData()
             	dataSend.setdefault(sensor, sample)
             collectMemory()
+	    chrono.start()
             self.connectionService.sendPackage('sample', dataSend)
+	    chrono.stop()
+	    timeChrono = chrono.read()
+	    chrono.reset()
             del dataSend
             self.sleep()
 
