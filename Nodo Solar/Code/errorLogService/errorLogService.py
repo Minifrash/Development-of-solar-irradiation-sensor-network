@@ -77,8 +77,8 @@ class ErrorLogService(object):
                 fileError = open(self.namesFiles.get('errorFile'), "a")
                 fileError.write(time + " " + str(serviceID) + " " + description + "/n")
                 fileError.close()
-            if error not in self.errorsCounter:
-                self.errorsCounter.setdefault(description, 0)
+            	if error not in self.errorsCounter:
+                    self.errorsCounter.setdefault(description, 0)
                 counter = self.errorsCounter.setdefault(description)
                 counter = counter + 1
                 self.errorsCounter.setdefault(description, counter)
