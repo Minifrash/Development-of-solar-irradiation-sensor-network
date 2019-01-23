@@ -121,7 +121,7 @@ class SamplingService(object):
                 deepsleep(timeToSleep*1000)
             else:
                 self.timeStamp = 0
-        if self.timeStamp == 0 or (self.timeStamp > 0 and self.rtc.now()[0] == 1970): # Antes != 1970
+        if self.timeStamp == 0 or (self.timeStamp > 0 and self.rtc.now()[0] != 1970):
             secondsNow = self.nowTimeInSeconds()
             if secondsNow >= self.sleepTimeSeconds:
                 if self.wakeTimeSeconds < self.sleepTimeSeconds:
