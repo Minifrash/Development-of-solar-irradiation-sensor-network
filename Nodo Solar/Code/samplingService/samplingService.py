@@ -105,12 +105,12 @@ class SamplingService(object):
         self.timeStamp = eval(fichero.readline())
         fichero.close()
         fichero = open('./samplingService/timeStamp.txt', "w")
-        fichero.write(str(0))
+        fichero.write(str(1))
         fichero.close()
         self.lock.release()
 
     def sleep(self):
-        if self.timeStamp > 0 and self.rtc.now()[0] != 1970:
+        if self.timeStamp > 1 and self.rtc.now()[0] != 1970:
             timeToSleep = self.timeStamp - time.time()
             if timeToSleep > 0:
                 self.lock.acquire()
@@ -120,8 +120,8 @@ class SamplingService(object):
                 self.lock.release()
                 deepsleep(timeToSleep*1000)
             else:
-                self.timeStamp = 0
-        if self.timeStamp == 0 or (self.timeStamp > 0 and self.rtc.now()[0] != 1970):
+                self.timeStamp = 1
+        if self.timeStamp == 1 or (self.timeStamp > 1 and self.rtc.now()[0] != 1970):
             secondsNow = self.nowTimeInSeconds()
             if secondsNow >= self.sleepTimeSeconds:
                 if self.wakeTimeSeconds < self.sleepTimeSeconds:
