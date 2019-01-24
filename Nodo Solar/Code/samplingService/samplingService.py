@@ -109,7 +109,7 @@ class SamplingService(object):
         fichero.close()
         self.lock.release()
 
-    def sleep(self):
+    def sleep(self):# Fixme : A veces no duerme si se despierta antes de los establecido
         if self.timeStamp > 1 and self.rtc.now()[0] != 1970:
             timeToSleep = self.timeStamp - time.time()
             if timeToSleep > 0:
